@@ -1,0 +1,9 @@
+Poštovani,
+
+Želimo da Vas obavestimo da je potrebno da aktivirate vaš nalog. To mozete uraditi klikom na sledeći aktivacioni link:
+
+http://{{ site.domain }}{% url 'registration_activate' activation_key %}
+Link je validan {{ expiration_days }} dana.
+
+Srdačan pozdrav,
+Athon team
