@@ -32,6 +32,8 @@ other_api_urls = patterns('',
     url(r'^api/user/remove_request_to_fallow/$',
             views.RemoveRequestToFallowUserView.as_view()),
     url(r'^api/user/accept_request/$', views.AcceptRequestToFallowUserView.as_view()),
+    url(r'^api/user/fallowing/$', views.FallowingUserView.as_view()),
+    url(r'^api/user/fallowers/$', views.FallowersUserView.as_view()),
 )
 
 urlpatterns = patterns('',

@@ -1,4 +1,4 @@
-from athon import models, serializers
+from athon import models, serializers, enums
 
 from django.views.generic.base import TemplateView
 from django.core.exceptions import ValidationError
@@ -128,4 +128,65 @@ class AcceptRequestToFallowUserView(generics.CreateAPIView):
             return Response(status=status.HTTP_200_OK)
         return Response(data={"Can't accept request to fallow. Relationship does not exist."},
                 status=status.HTTP_400_BAD_REQUEST)
+
+
+class FallowingUserView(generics.ListAPIView):
+    model = models.AthonUser
+    serializer_class = serializers.FallowSerializer
+    paginate_by = 20
+
+    def get_queryset(self):
+        user_id = self.request.DATA.get('id', None)
+        user_fallow_list = []
+        if user_id:
+            try:
+                athon_user = models.AthonUser.objects.get(id=user_id)
+                user_fallow_list = list(self.request.user.athon_user.fallowing.filter(
+                    request_status=False).values_list('followed_user_id', flat=True))
+            except models.AthonUser.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+        else:
+            athon_user = self.request.user.athon_user
+        fallowing_list = athon_user.fallowing.filter(request_status=False)
+
+        return chain_fallow_list(fallowing_list, user_fallow_list)
+
+
+def chain_fallow_list(fallow_list, user_fallow_list):
+    l = map(lambda relationship: {'user': relationship.followed_user, 'status': 'Fallowing'} if
+            relationship.followed_user_id in user_fallow_list else
+            {'user': relationship.followed_user, 'status': 'Fallow'}, fallow_list)
+    return l
+
+
+class FallowersUserView(generics.ListAPIView):
+    model = models.AthonUser
+    serializer_class = serializers.FallowSerializer
+    paginate_by = 20
+
+    def get_queryset(self):
+        user_id = self.request.DATA.get('id', None)
+        user_fallow_list = []
+        if user_id:
+            try:
+                athon_user = models.AthonUser.objects.get(id=user_id)
+                user_fallow_list = list(self.request.user.athon_user.fallowers.filter()
+                        .values_list('follower_id', flat=True))
+            except models.AthonUser.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+        else:
+            athon_user = self.request.user.athon_user
+        fallowers_list = athon_user.fallowers.all()
+
+        return chain_fallowers_list(fallowers_list, user_fallow_list)
+
+
+def chain_fallowers_list(fallow_list, user_fallow_list):
+    l = map(lambda relationship: {'user': relationship.follower, 'fallow_status': 'Fallowing',
+            'request_status': relationship.request_status} if
+            relationship.follower_id in user_fallow_list else {'user': relationship.follower,
+            'fallow_status': 'Fallow', 'request_status': relationship.request_status}, fallow_list)
+    return l
+
+
 

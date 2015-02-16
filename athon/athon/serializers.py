@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from drf_toolbox.serializers import ModelSerializer as DRFModelSerializer
 from rest_framework.serializers import ModelSerializer
 
-from rest_framework.fields import IntegerField
+from rest_framework.fields import IntegerField, BooleanField
 
 class _UserSerializer(ModelSerializer):
     """ For some reason, we cannot use UserSerializer class directly bellow.
@@ -51,4 +51,13 @@ class AthonUserSerializer(DRFModelSerializer):
             "fallowers_number", "fallowing_number"
         )
 
+
+class FallowSerializer(DRFModelSerializer):
+
+    user = AthonUserSerializer()
+    request_status = BooleanField(default=False)
+
+    class Meta:
+        model = models.FallowUsers
+        fields = ('user', 'fallow_status', 'request_status')
 
