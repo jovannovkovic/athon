@@ -38,6 +38,13 @@ class AthleteHistory(models.Model):
     achievements = models.ManyToManyField(Achievement)
 
 
+class FallowUsersManager(models.Manager):
+
+    def get_queryset(self):
+        return super(FallowUsersManager, self).get_queryset().select_related(
+                'follower__user', 'followed_user__user')
+
+
 class FallowUsers(models.Model):
     """ Plan je sledeci. Kada nekog dodas, upises tvog usera prvo, posle njega.
     Onda proveris da li postoji unos gde je on prvi, a ti drugi. Ako postoji,
@@ -60,6 +67,8 @@ class FallowUsers(models.Model):
     stavljamo request_status na False.
 
     """
+    objects = FallowUsersManager()
+
     follower = models.ForeignKey('AthonUser', related_name="fallowing")
     followed_user = models.ForeignKey('AthonUser', related_name="fallowers")
     fallow_status = enum.EnumField(FallowStatus)
@@ -76,7 +85,12 @@ class FallowUsers(models.Model):
     def __unicode__(self):
         return "fallower %s - fallowed %s" % (self.follower, self.followed_user)
 
+
 class AthonUserManager(models.Manager):
+
+    def get_queryset(self):
+        return super(AthonUserManager, self).get_queryset().select_related(
+                'user').prefetch_related('athlete_history')
 
     def fallow(self, follower, followed_user):
         if followed_user.is_public_profile:

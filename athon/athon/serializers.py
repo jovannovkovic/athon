@@ -2,9 +2,9 @@ from athon import models
 
 from django.contrib.auth import get_user_model
 from drf_toolbox.serializers import ModelSerializer as DRFModelSerializer
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, Field
 
-from rest_framework.fields import IntegerField, BooleanField
+from rest_framework.fields import IntegerField, BooleanField, CharField
 
 class _UserSerializer(ModelSerializer):
     """ For some reason, we cannot use UserSerializer class directly bellow.
@@ -52,10 +52,23 @@ class AthonUserSerializer(DRFModelSerializer):
         )
 
 
+class FallowAthonUserSerializer(ModelSerializer):
+
+    username = Field(source='user.username')
+    first_name = Field(source='user.first_name')
+    last_name = Field(source='user.last_name')
+
+    class Meta:
+        model = models.AthonUser
+        fields = ('profile_photo', 'username', 'first_name', 'last_name', 'is_public_profile')
+        exclude = ('fallow_users',)
+
+
 class FallowSerializer(DRFModelSerializer):
 
-    user = AthonUserSerializer()
+    user = FallowAthonUserSerializer()
     request_status = BooleanField(default=False)
+    fallow_status = CharField()
 
     class Meta:
         model = models.FallowUsers
