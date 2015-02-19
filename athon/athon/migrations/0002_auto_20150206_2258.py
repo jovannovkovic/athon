@@ -41,15 +41,15 @@ class Migration(migrations.Migration):
             name='FallowUsers',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('fallow_status', django_enumfield.db.fields.EnumField(default=1, enum=athon.enums.FallowStatus,
+                ('fallow_status', django_enumfield.db.fields.EnumField(default=1, enum=athon.enums.FollowStatus,
                                                                        choices=[(1,
                                                                                  django_enumfield.enum.Value(b'FALLOW',
                                                                                                              1,
                                                                                                              'Fallow',
-                                                                                                             athon.enums.FallowStatus)),
+                                                                                                             athon.enums.FollowStatus)),
                                                                                 (2, django_enumfield.enum.Value(
                                                                                     b'FALLOWING', 2, 'Fallowing',
-                                                                                    athon.enums.FallowStatus))])),
+                                                                                    athon.enums.FollowStatus))])),
                 ('request_status', models.BooleanField(default=False)),
                 ('date_started', models.DateTimeField(auto_now_add=True)),
                 ('fallowing_user', models.ForeignKey(related_name='fallowers', to='athon.AthonUser')),

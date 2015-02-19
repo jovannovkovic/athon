@@ -17,30 +17,32 @@ def if_debug(*args, **kwargs):
 # before `user`), or else you'll get that method is not allowed on request.
 router = routers.DefaultRouter()
 # router.register(r'user/register', views.UserRegister)
-router.register(r'user/by_id', views.AthonUserView)
+router.register(r'user', views.AthonUserView)
 
-other_api_urls = patterns('',
+urlpatterns = patterns('',
     url(r'^api/user/register/$', account.RegistrationView.as_view()),
     url(r'^api/user/activate/(?P<activation_key>\w+)/$', views.IndexView.as_view(),
         name='registration_activate'),
     url(r'^api/user/activate$', account.ActivationView.as_view()),
     url(r'^api/user/login/$', account.AuthenticateView.as_view()),
     url(r'^api/user/logout/$', account.LogoutView.as_view()),
-    url(r'^api/user/fallow/$', views.FallowUserView.as_view()),
-    url(r'^api/user/unfallow/$', views.UnFallowUserView.as_view()),
-    url(r'^api/user/request_to_fallow/$', views.RequestToFallowUserView.as_view()),
-    url(r'^api/user/remove_request_to_fallow/$',
-            views.RemoveRequestToFallowUserView.as_view()),
-    url(r'^api/user/accept_request/$', views.AcceptRequestToFallowUserView.as_view()),
-    url(r'^api/user/fallowing/(?P<id>[0-9]+)/$', views.FallowingUserView.as_view()),
-    url(r'^api/user/fallowers/(?P<id>[0-9]+)/$', views.FallowersUserView.as_view()),
+    url(r'^api/user/available/username/$', account.CheckUsernameView.as_view()),
+    url(r'^api/user/available/email/$', account.CheckEmailView.as_view()),
+    url(r'^api/user/(?P<id>[0-9]+)/follow/$', views.FollowUserView.as_view()),
+    url(r'^api/user/(?P<id>[0-9]+)/unfollow/$', views.UnFollowUserView.as_view()),
+    url(r'^api/user/(?P<id>[0-9]+)/request_to_follow/$', views.RequestToFollowUserView.as_view()),
+    url(r'^api/user/(?P<id>[0-9]+)/remove_request_to_follow/$',
+            views.RemoveRequestToFollowUserView.as_view()),
+    url(r'^api/user/(?P<id>[0-9]+)/accept_request/$', views.AcceptRequestToFollowUserView.as_view()),
+    url(r'^api/user/(?P<id>[0-9]+)/following/$', views.FollowingUserView.as_view()),
+    url(r'^api/user/(?P<id>[0-9]+)/followers/$', views.FollowersUserView.as_view()),
+
 )
 
-urlpatterns = patterns('',
+urlpatterns += patterns('',
     url(r'^api/', include(router.urls)),
     if_debug(r'^api/docs/', include('rest_framework_swagger.urls')),
 
     url(r'^admin/', include(admin.site.urls)),
 )
 
-urlpatterns += other_api_urls

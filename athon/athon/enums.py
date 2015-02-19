@@ -14,13 +14,13 @@ class Gender(enum.Enum):
     }
 
 
-class FallowStatus(enum.Enum):
-    """ Enumeration for fallow status (fallow, fallowing). """
+class FollowStatus(enum.Enum):
+    """ Enumeration for follow status (follow, following). """
 
-    FALLOW = 1
-    FALLOWING = 2
+    FOLLOW = 1
+    FOLLOWING = 2
 
     labels = {
-    FALLOW: _('Fallow'),
-    FALLOWING: _('Fallowing')
+    FOLLOW: _('Follow'),
+    FOLLOWING: _('Following')
     }

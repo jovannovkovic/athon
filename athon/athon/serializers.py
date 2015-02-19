@@ -6,6 +6,7 @@ from rest_framework.serializers import ModelSerializer, Field
 
 from rest_framework.fields import IntegerField, BooleanField, CharField
 
+
 class _UserSerializer(ModelSerializer):
     """ For some reason, we cannot use UserSerializer class directly bellow.
     This is the reason why we have this private class here (which has very
@@ -48,11 +49,12 @@ class AthonUserSerializer(DRFModelSerializer):
     class Meta:
         model = models.AthonUser
         read_only_fields = (
-            "fallowers_number", "fallowing_number"
+            "followers_number", "following_number"
         )
+        exclude = ('follow_users',)
 
 
-class FallowAthonUserSerializer(ModelSerializer):
+class FollowAthonUserSerializer(ModelSerializer):
 
     username = Field(source='user.username')
     first_name = Field(source='user.first_name')
@@ -60,17 +62,17 @@ class FallowAthonUserSerializer(ModelSerializer):
 
     class Meta:
         model = models.AthonUser
-        fields = ('profile_photo', 'username', 'first_name', 'last_name', 'is_public_profile')
-        exclude = ('fallow_users',)
+        fields = ('id', 'profile_photo', 'username', 'first_name', 'last_name', 'is_public_profile')
+        exclude = ('follow_users',)
 
 
-class FallowSerializer(DRFModelSerializer):
+class FollowSerializer(DRFModelSerializer):
 
-    user = FallowAthonUserSerializer()
+    user = FollowAthonUserSerializer()
     request_status = BooleanField(default=False)
-    fallow_status = CharField()
+    follow_status = CharField()
 
     class Meta:
-        model = models.FallowUsers
-        fields = ('user', 'fallow_status', 'request_status')
+        model = models.FollowUsers
+        fields = ('user', 'follow_status', 'request_status')
 

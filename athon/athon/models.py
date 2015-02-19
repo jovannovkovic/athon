@@ -15,7 +15,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from uuid_upload_path.storage import upload_to
-from enums import Gender, FallowStatus
+from enums import Gender, FollowStatus
 
 SHA1_RE = re.compile('^[a-f0-9]{40}$')
 
@@ -38,14 +38,14 @@ class AthleteHistory(models.Model):
     achievements = models.ManyToManyField(Achievement)
 
 
-class FallowUsersManager(models.Manager):
+class FollowUsersManager(models.Manager):
 
     def get_queryset(self):
-        return super(FallowUsersManager, self).get_queryset().select_related(
+        return super(FollowUsersManager, self).get_queryset().select_related(
                 'follower__user', 'followed_user__user')
 
 
-class FallowUsers(models.Model):
+class FollowUsers(models.Model):
     """ Plan je sledeci. Kada nekog dodas, upises tvog usera prvo, posle njega.
     Onda proveris da li postoji unos gde je on prvi, a ti drugi. Ako postoji,
     na oba unosa stavis fallow_status na Fallowing, u suprotnom nista.
@@ -67,11 +67,11 @@ class FallowUsers(models.Model):
     stavljamo request_status na False.
 
     """
-    objects = FallowUsersManager()
+    objects = FollowUsersManager()
 
-    follower = models.ForeignKey('AthonUser', related_name="fallowing")
-    followed_user = models.ForeignKey('AthonUser', related_name="fallowers")
-    fallow_status = enum.EnumField(FallowStatus)
+    follower = models.ForeignKey('AthonUser', related_name="following")
+    followed_user = models.ForeignKey('AthonUser', related_name="followers")
+    follow_status = enum.EnumField(FollowStatus)
     request_status = models.BooleanField(default=False)
     date_started = models.DateTimeField(auto_now_add=True, blank=True)
 
@@ -80,7 +80,7 @@ class FallowUsers(models.Model):
             raise FollowingHimselfError(
                     _("User cannot follow himself"))
         # else
-        return super(FallowUsers, self).save(*args, **kwargs)
+        return super(FollowUsers, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return "fallower %s - fallowed %s" % (self.follower, self.followed_user)
@@ -92,46 +92,46 @@ class AthonUserManager(models.Manager):
         return super(AthonUserManager, self).get_queryset().select_related(
                 'user').prefetch_related('athlete_history')
 
-    def fallow(self, follower, followed_user):
+    def follow(self, follower, followed_user):
         if followed_user.is_public_profile:
-            relationship, created = FallowUsers.objects.get_or_create(
+            relationship, created = FollowUsers.objects.get_or_create(
                 follower=follower,
                 followed_user=followed_user
             )
             if created:
                 self.update_counter_up(follower, followed_user)
-            if self.update_status_to_fallowing(followed_user, follower):
-                relationship.fallow_status = FallowStatus.FALLOWING
+            if self.update_status_to_following(followed_user, follower):
+                relationship.follow_status = FollowStatus.FOLLOWING
                 relationship.save()
             return True
         return False
 
-    def update_status_to_fallowing(self, user, fallowing_user):
+    def update_status_to_following(self, user, following_user):
         try:
-            relationship = FallowUsers.objects.get(follower=user, followed_user=fallowing_user)
-            relationship.fallow_status = FallowStatus.FALLOWING
+            relationship = FollowUsers.objects.get(follower=user, followed_user=following_user)
+            relationship.fallow_status = FollowStatus.FOLLOWING
             relationship.save()
             return True
-        except FallowUsers.DoesNotExist:
+        except FollowUsers.DoesNotExist:
             return False
 
-    def unfallow(self, follower, followed_user):
+    def unfollow(self, follower, followed_user):
         try:
-            FallowUsers.objects.get(follower=follower, followed_user=followed_user).delete()
-            self.update_status_to_unfallow(followed_user, follower)
+            FollowUsers.objects.get(follower=follower, followed_user=followed_user).delete()
+            self.update_status_to_unfollow(followed_user, follower)
             self.update_counter_down(follower, followed_user)
             return True
-        except FallowUsers.DoesNotExist:
+        except FollowUsers.DoesNotExist:
             return False
 
-    def update_status_to_unfallow(self, follower, followed_user):
-        FallowUsers.objects.filter(follower=follower, followed_user=followed_user).update(
-                fallow_status=FallowStatus.FALLOW
+    def update_status_to_unfollow(self, follower, followed_user):
+        FollowUsers.objects.filter(follower=follower, followed_user=followed_user).update(
+                follow_status=FollowStatus.FOLLOW
         )
 
-    def request_to_fallow(self, follower, followed_user):
+    def request_to_follow(self, follower, followed_user):
         if not followed_user.is_public_profile:
-            relationship, created = FallowUsers.objects.get_or_create(
+            relationship, created = FollowUsers.objects.get_or_create(
                 follower=follower,
                 followed_user=followed_user,
                 request_status=True
@@ -141,43 +141,43 @@ class AthonUserManager(models.Manager):
 
     def remove_request(self, follower, followed_user):
         try:
-            FallowUsers.objects.get(follower=follower, followed_user=followed_user).delete()
+            FollowUsers.objects.get(follower=follower, followed_user=followed_user).delete()
             return True
-        except FallowUsers.DoesNotExist:
+        except FollowUsers.DoesNotExist:
             return False
 
     def accept_request(self, follower, followed_user):
         try:
-            relationship = FallowUsers.objects.get(follower=follower, followed_user=followed_user)
+            relationship = FollowUsers.objects.get(follower=follower, followed_user=followed_user)
             relationship.request_status = False
             if self.update_accepted_request(followed_user, follower):
-                relationship.fallow_status = FallowStatus.FALLOWING
+                relationship.fallow_status = FollowStatus.FOLLOWING
             relationship.save()
             self.update_counter_up(follower, followed_user)
             return True
-        except FallowUsers.DoesNotExist:
+        except FollowUsers.DoesNotExist:
             return False
 
     def update_accepted_request(self, follower, followed_user):
         try:
-            relationship = FallowUsers.objects.get(follower=follower, followed_user=followed_user)
-            relationship.fallow_status = FallowStatus.FALLOWING
+            relationship = FollowUsers.objects.get(follower=follower, followed_user=followed_user)
+            relationship.fallow_status = FollowStatus.FOLLOWING
             relationship.save()
             return True
-        except FallowUsers.DoesNotExist:
+        except FollowUsers.DoesNotExist:
             return False
 
-    def update_counter_up(self, fallower, fallowed_user):
-        fallower.fallowing_number = models.F('fallowing_number') + 1
-        fallower.save()
-        fallowed_user.fallowers_number = models.F('fallowers_number') + 1
-        fallowed_user.save()
+    def update_counter_up(self, follower, followed_user):
+        follower.following_number = models.F('following_number') + 1
+        follower.save()
+        followed_user.followers_number = models.F('followers_number') + 1
+        followed_user.save()
 
-    def update_counter_down(self, fallower, fallowed_user):
-        fallower.fallowing_number = models.F('fallowing_number') - 1
-        fallower.save()
-        fallowed_user.fallowers_number = models.F('fallowers_number') - 1
-        fallowed_user.save()
+    def update_counter_down(self, follower, followed_user):
+        follower.following_number = models.F('following_number') - 1
+        follower.save()
+        followed_user.followers_number = models.F('followers_number') - 1
+        followed_user.save()
 
 # class FallowersUsers(models.Model):
 # """ All users that fallow you.
@@ -214,13 +214,13 @@ class AthonUser(models.Model):
     profile_photo = models.ImageField(upload_to=upload_to,
                                       null=True, blank=True)
     is_public_profile = models.BooleanField(default=True)
-    height = models.PositiveSmallIntegerField(default=0)
-    weight = models.PositiveSmallIntegerField(default=0)
-    fallow_users = models.ManyToManyField('self', through='FallowUsers',
-                                          symmetrical=False, related_name='related_to_fallowing')
-    fallowing_number = models.PositiveIntegerField(default=0)
+    height = models.CharField(max_length=10, null=True, blank=True)
+    weight = models.CharField(max_length=10, null=True, blank=True)
+    follow_users = models.ManyToManyField('self', through='FollowUsers',
+                                          symmetrical=False, related_name='related_to_following')
+    following_number = models.PositiveIntegerField(default=0)
     # fallowers_user = models.ManyToManyField('self', through='Fallowers')
-    fallowers_number = models.PositiveIntegerField(default=0)
+    followers_number = models.PositiveIntegerField(default=0)
     # fallowers_requests = models.ManyToManyField('self', through='FallowRequests')
     athlete_history = models.ManyToManyField(AthleteHistory, null=True, blank=True)
 

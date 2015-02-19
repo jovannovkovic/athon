@@ -6,7 +6,7 @@ from django.views.generic.base import TemplateView
 from django.core.exceptions import ValidationError
 
 from rest_framework import viewsets, mixins, permissions, \
-        generics
+        generics, views
 from rest_framework import status
 from rest_framework.response import Response
 
@@ -47,162 +47,152 @@ class AthonUserView(mixins.RetrieveModelMixin,
         mixins.UpdateModelMixin.pre_save(self, obj)
 
 
-class FallowUserView(generics.CreateAPIView):
-    model = models.AthonUser
+class FollowUserView(views.APIView):
+    # model = models.FollowUsers
 
     def post(self, request, *args, **kwargs):
-        fallower = self.request.user.athon_user
-        fallowed_id = self.request.DATA['id']
+        follower = self.request.user.athon_user
+        followed_id = self.kwargs['id']
         try:
-            fallowed = models.AthonUser.objects.get(id=fallowed_id)
+            followed = models.AthonUser.objects.get(id=followed_id)
         except models.AthonUser.DoesNotExist:
-            return Response(data={"Can't fallow. User does not exist."},
+            return Response(data={"Can't follow. User does not exist."},
                     status=status.HTTP_404_NOT_FOUND)
-        if models.AthonUser.objects.fallow(fallower, fallowed):
+        if models.AthonUser.objects.follow(follower, followed):
             return Response(status=status.HTTP_201_CREATED)
-        return Response(data={"Can't fallow. User is private."},
+        return Response(data={"Can't follow. User is private."},
                 status=status.HTTP_400_BAD_REQUEST)
 
 
-class UnFallowUserView(generics.CreateAPIView):
-    model = models.AthonUser
+class UnFollowUserView(views.APIView):
 
     def post(self, request, *args, **kwargs):
-        fallower = self.request.user.athon_user
-        fallowed_id = self.request.DATA['id']
+        follower = self.request.user.athon_user
+        followed_id = self.kwargs['id']
         try:
-            fallowed = models.AthonUser.objects.get(id=fallowed_id)
+            followed = models.AthonUser.objects.get(id=followed_id)
         except models.AthonUser.DoesNotExist:
-            return Response(data={"Can't unfallow. User does not exist."},
+            return Response(data={"Can't unfollow. User does not exist."},
                     status=status.HTTP_404_NOT_FOUND)
-        if models.AthonUser.objects.unfallow(fallower, fallowed):
+        if models.AthonUser.objects.unfollow(follower, followed):
             return Response(status=status.HTTP_200_OK)
-        return Response(data={"Can't unfallow. Relationship does not exist."},
+        return Response(data={"Can't unfollow. Relationship does not exist."},
                 status=status.HTTP_400_BAD_REQUEST)
 
 
-class RequestToFallowUserView(generics.CreateAPIView):
-    model = models.AthonUser
+class RequestToFollowUserView(views.APIView):
 
     def post(self, request, *args, **kwargs):
-        fallower = self.request.user.athon_user
-        fallowed_id = self.request.DATA['id']
+        follower = self.request.user.athon_user
+        followed_id = self.kwargs['id']
         try:
-            fallowed = models.AthonUser.objects.get(id=fallowed_id)
+            followed = models.AthonUser.objects.get(id=followed_id)
         except models.AthonUser.DoesNotExist:
-            return Response(data={"Can't request to fallow. User does not exist."},
+            return Response(data={"Can't request to follow. User does not exist."},
                     status=status.HTTP_404_NOT_FOUND)
-        if models.AthonUser.objects.request_to_fallow(fallower, fallowed):
+        if models.AthonUser.objects.request_to_follow(follower, followed):
             return Response(status=status.HTTP_201_CREATED)
-        return Response(data={"Can't request to fallow. User is not private."},
+        return Response(data={"Can't request to follow. User is not private."},
                 status=status.HTTP_400_BAD_REQUEST)
 
 
-class RemoveRequestToFallowUserView(generics.CreateAPIView):
-    model = models.AthonUser
+class RemoveRequestToFollowUserView(views.APIView):
 
     def post(self, request, *args, **kwargs):
-        fallower = self.request.user.athon_user
-        fallowed_id = self.request.DATA['id']
+        follower = self.request.user.athon_user
+        followed_id = self.kwargs['id']
         try:
-            fallowed = models.AthonUser.objects.get(id=fallowed_id)
+            followed = models.AthonUser.objects.get(id=followed_id)
         except models.AthonUser.DoesNotExist:
-            return Response(data={"Can't remove request to fallow. User does not exist."},
+            return Response(data={"Can't remove request to follow. User does not exist."},
                     status=status.HTTP_404_NOT_FOUND)
-        if models.AthonUser.objects.remove_request(fallower, fallowed):
+        if models.AthonUser.objects.remove_request(follower, followed):
             return Response(status=status.HTTP_200_OK)
-        return Response(data={"Can't remove request to fallow. Relationship does not exist."},
+        return Response(data={"Can't remove request to follow. Relationship does not exist."},
                 status=status.HTTP_400_BAD_REQUEST)
 
 
-class AcceptRequestToFallowUserView(generics.CreateAPIView):
-    model = models.AthonUser
+class AcceptRequestToFollowUserView(views.APIView):
 
     def post(self, request, *args, **kwargs):
-        fallowed_user = self.request.user.athon_user
-        fallower_id = self.request.DATA['id']
+        followed_user = self.request.user.athon_user
+        follower_id = self.kwargs['id']
         try:
-            fallower = models.AthonUser.objects.get(id=fallower_id)
+            follower = models.AthonUser.objects.get(id=follower_id)
         except models.AthonUser.DoesNotExist:
-            return Response(data={"Can't accept request to fallow. User does not exist."},
+            return Response(data={"Can't accept request to follow. User does not exist."},
                     status=status.HTTP_404_NOT_FOUND)
-        if models.AthonUser.objects.accept_request(fallower, fallowed_user):
+        if models.AthonUser.objects.accept_request(follower, followed_user):
             return Response(status=status.HTTP_200_OK)
-        return Response(data={"Can't accept request to fallow. Relationship does not exist."},
+        return Response(data={"Can't accept request to follow. Relationship does not exist."},
                 status=status.HTTP_400_BAD_REQUEST)
 
 
-class FallowingUserView(generics.ListAPIView):
+class FollowingUserView(generics.ListAPIView):
     model = models.AthonUser
-    serializer_class = serializers.FallowSerializer
+    serializer_class = serializers.FollowSerializer
     paginate_by = 20
 
     def get_queryset(self):
-        # user_id = self.request.DATA.get('id', None)
+        athon_user = self.request.user.athon_user
         user_id = self.kwargs['id']
-        if user_id:
+        if athon_user.id != user_id:
             try:
-                athon_user = models.AthonUser.objects.get(id=user_id)
-                fallowing_list = athon_user.fallowing.filter(request_status=False)
-                request_user = self.request.user.athon_user
-                user_fallow_list = list(request_user.fallowing.filter(
+                f_user = models.AthonUser.objects.get(id=user_id)
+                following_list = f_user.following.filter(request_status=False)
+                user_follow_list = list(athon_user.following.filter(
                     request_status=False).values_list('followed_user_id', flat=True))
-                return chain_fallow_list(fallowing_list, user_fallow_list, request_user.id)
+                return chain_follow_list(following_list, user_follow_list, athon_user.id)
             except models.AthonUser.DoesNotExist:
                 return Response(status=status.HTTP_404_NOT_FOUND)
-        else:
-            athon_user = self.request.user.athon_user
-        fallowing_list = athon_user.fallowing.filter(request_status=False)
+        following_list = athon_user.following.filter(request_status=False)
         return map(lambda relationship: {'user': relationship.followed_user,
-                                         'fallow_status': 'Fallowing', 'request_status': False}, fallowing_list)
+                                         'follow_status': 'Following', 'request_status': False}, following_list)
 
 
-def chain_fallow_list(fallow_list, user_fallow_list, user_id):
-    l = map(lambda relationship: {'user': relationship.followed_user, 'fallow_status': 'Fallowing',
-            'request_status': False} if relationship.followed_user_id in user_fallow_list else
-            {'user': relationship.followed_user, 'fallow_status': 'Fallow', 'request_status': False},
-            fallow_list)
+def chain_follow_list(follow_list, user_follow_list, user_id):
+    l = map(lambda relationship: {'user': relationship.followed_user, 'follow_status': 'Following',
+            'request_status': False} if relationship.followed_user_id in user_follow_list else
+            {'user': relationship.followed_user, 'follow_status': 'Follow', 'request_status': False},
+            follow_list)
     index = [i for i, j in zip(count(), l) if j['user'].id == user_id]
     if index:
         l.insert(0, l.pop(index[0]))
-        l[0]['fallow_status'] = '-'
+        l[0]['follow_status'] = '-'
     return l
 
 
-class FallowersUserView(generics.ListAPIView):
+class FollowersUserView(generics.ListAPIView):
     model = models.AthonUser
-    serializer_class = serializers.FallowSerializer
+    serializer_class = serializers.FollowSerializer
     paginate_by = 20
 
     def get_queryset(self):
-        # user_id = self.request.DATA.get('id', None)
+        athon_user = self.request.user.athon_user
         user_id = self.kwargs['id']
-        if int(user_id) > 0:
+        if athon_user.id != user_id:
             try:
-                athon_user = models.AthonUser.objects.get(id=user_id)
-                fallowers_list = athon_user.fallowers.all()
-                request_user = self.request.user.athon_user
-                user_fallow_list = list(request_user.fallowing.filter()
+                f_user = models.AthonUser.objects.get(id=user_id)
+                followers_list = f_user.followers.all()
+                user_follow_list = list(athon_user.following.filter()
                         .values_list('followed_user_id', flat=True))
-                return chain_fallowers_list(fallowers_list, user_fallow_list, request_user.id)
+                return chain_followers_list(followers_list, user_follow_list, athon_user.id)
             except models.AthonUser.DoesNotExist:
                 return Response(status=status.HTTP_404_NOT_FOUND)
-        else:
-            athon_user = self.request.user.athon_user
-        fallowers_list = athon_user.fallowers.all()
-        return map(lambda relationship: {'user': relationship.follower, 'fallow_status': relationship.fallow_status,
-            'request_status': relationship.request_status}, fallowers_list)
+        followers_list = athon_user.followers.all()
+        return map(lambda relationship: {'user': relationship.follower, 'follow_status': relationship.follow_status,
+            'request_status': relationship.request_status}, followers_list)
 
 
-def chain_fallowers_list(fallow_list, user_fallow_list, user_id):
-    l = map(lambda relationship: {'user': relationship.follower, 'fallow_status': 'Fallowing',
+def chain_followers_list(follow_list, user_follow_list, user_id):
+    l = map(lambda relationship: {'user': relationship.follower, 'follow_status': 'Following',
             'request_status': False} if
-            relationship.follower_id in user_fallow_list else {'user': relationship.follower,
-            'fallow_status': 'Fallow', 'request_status': False}, fallow_list)
+            relationship.follower_id in user_follow_list else {'user': relationship.follower,
+            'follow_status': 'Follow', 'request_status': False}, follow_list)
     index = [i for i, j in zip(count(), l) if j['user'].id == user_id]
     if index:
         l.insert(0, l.pop(index[0]))
-        l[0]['fallow_status'] = '-'
+        l[0]['follow_status'] = '-'
     return l
 
 

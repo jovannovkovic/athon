@@ -5,4 +5,4 @@ from django.contrib import admin
 
 
 admin.site.register(models.AthonUser)
-admin.site.register(models.FallowUsers)
+admin.site.register(models.FollowUsers)

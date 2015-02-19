@@ -71,6 +71,36 @@ class AuthenticateView(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
 
+class CheckUsernameView(APIView):
+    """ Check if user with sent username exist. If exist return status 200,
+    else API call will break.
+
+    """
+
+    permission_classes = [AllowAny]
+    model = get_user_model()
+
+    def post(self, request):
+        username = data(request, 'username')
+        user = get_user_model().objects.get(username=username)
+        return Response(status=status.HTTP_200_OK)
+
+
+class CheckEmailView(APIView):
+    """ Check if user with sent email exist. If exist, return status 200,
+    else API call will break.
+
+    """
+
+    permission_classes = [AllowAny]
+    model = get_user_model()
+
+    def post(self, request):
+        email = data(request, 'email')
+        user = get_user_model().objects.get(email=email)
+        return Response(status=status.HTTP_200_OK)
+
+
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
