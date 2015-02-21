@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 import pkg_resources
+import dj_database_url
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -36,7 +37,7 @@ DEFAULT_FROM_EMAIL = 'Athon'
 
 TEMPLATE_DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -107,6 +108,15 @@ USE_L10N = True
 USE_TZ = True
 
 
+# Parse database configuration from $DATABASE_URL
+DATABASES['default'] = dj_database_url.config()
+
+# Enable Connection Pooling
+DATABASES['default']['ENGINE'] = 'django_postgrespool'
+
+# Honor the 'X-Forwarded-Proto' header for request.is_secure()
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
@@ -115,9 +125,19 @@ DEFAULT_MEDIA_PATH = "media"
 MEDIA_ROOT = os.path.join(BASE_DIR, DEFAULT_MEDIA_PATH)
 MEDIA_URL = '/%s/' % DEFAULT_MEDIA_PATH
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_FOLDER = "static"
-STATIC_ROOT = os.path.join(BASE_DIR, STATIC_FOLDER)
+# STATIC_ROOT = os.path.join(BASE_DIR, STATIC_FOLDER)
+STATIC_ROOT = 'staticfiles'
 STATIC_URL = '/%s/' % STATIC_FOLDER
+
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'static'),
+)
+
+# Simplified static file serving.
+# https://warehouse.python.org/project/whitenoise/
+STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
