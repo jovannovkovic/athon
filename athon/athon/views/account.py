@@ -82,8 +82,11 @@ class CheckUsernameView(APIView):
 
     def post(self, request):
         username = data(request, 'username')
-        user = get_user_model().objects.get(username=username)
-        return Response(status=status.HTTP_200_OK)
+        try:
+            user = get_user_model().objects.get(username=username)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except get_user_model().DoesNotExist:
+            return Response(status=status.HTTP_200_OK)
 
 
 class CheckEmailView(APIView):
@@ -97,8 +100,11 @@ class CheckEmailView(APIView):
 
     def post(self, request):
         email = data(request, 'email')
-        user = get_user_model().objects.get(email=email)
-        return Response(status=status.HTTP_200_OK)
+        try:
+            user = get_user_model().objects.get(email=email)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except get_user_model().DoesNotExist:
+            return Response(status=status.HTTP_200_OK)
 
 
 class LogoutView(APIView):

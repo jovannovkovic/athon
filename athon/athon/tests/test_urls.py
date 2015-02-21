@@ -155,13 +155,15 @@ def test_user_update_image(logged_client):
 
     with open(path.join(path.dirname(__file__), "pixel.jpg")) as file_ptr:
         response = logged_client.patch(
-                "/api/user/%s/" % user_id, {'profile_photo': file_ptr})
+                "/api/user/%s/" % user_id, {'profile_photo': file_ptr,
+                        'hometown': 'Ub'})
     assert response.status_code == status.HTTP_200_OK
 
     a_user = get_user_model().objects.get(username=TEST_USERNAME).athon_user
     assert a_user.profile_photo.url.startswith(
             "/media/athon/athonuser/")
     assert a_user.profile_photo.url.endswith("jpg")
+    assert a_user.hometown == 'Ub'
 
 
 @pytest.mark.django_db
@@ -310,6 +312,37 @@ def test_accept_request_to_follow_non_existing_user(logged_client, another_user)
         "/api/user/%s/accept_request/" % user_id)
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
+
+@pytest.mark.django_db
+def test_username_exist(api_client, user):
+    response = api_client.post(
+        "/api/user/available/username/",
+        {
+            'username': TEST_USERNAME_1,
+        }, format='json')
+    assert response.status_code == status.HTTP_200_OK
+    response = api_client.post(
+        "/api/user/available/username/",
+        {
+            'username': TEST_USERNAME,
+        }, format='json')
+    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+
+
+@pytest.mark.django_db
+def test_email_exist(api_client, user):
+    response = api_client.post(
+        "/api/user/available/email/",
+        {
+            'email': TEST_EMAIL_1,
+        }, format='json')
+    assert response.status_code == status.HTTP_200_OK
+    response = api_client.post(
+        "/api/user/available/email/",
+        {
+            'email': TEST_EMAIL,
+        }, format='json')
+    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
 
