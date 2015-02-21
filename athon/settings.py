@@ -86,7 +86,7 @@ DATABASES = {
         'ENGINE': "django.db.backends.postgresql_psycopg2",
         'NAME': os.environ.get('DB_NAME', "athon"),
         'USER': os.environ.get('DB_USER', "athon"),
-        'PASSWORD': os.environ.get('DB_PASSWD', "athon123"),
+        'PASSWORD': os.environ.get('DB_PASSWD', "athon"),
         'HOST': os.environ.get('DB_HOST', "localhost"),
         'PORT': int(os.environ.get('DB_PORT', 5432)),
         # just in case, add the test database stuff here also
