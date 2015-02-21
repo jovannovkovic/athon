@@ -21,7 +21,7 @@ router.register(r'user', views.AthonUserView)
 
 urlpatterns = patterns('',
     url(r'^api/user/register/$', account.RegistrationView.as_view()),
-    url(r'^api/user/activate/(?P<activation_key>\w+)/$', views.IndexView.as_view(),
+    url(r'^user/activate/(?P<activation_key>\w+)/$', views.IndexView.as_view(),
         name='registration_activate'),
     url(r'^api/user/activate$', account.ActivationView.as_view()),
     url(r'^api/user/login/$', account.AuthenticateView.as_view()),
