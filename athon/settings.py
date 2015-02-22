@@ -81,18 +81,7 @@ ACCOUNT_ACTIVATION_DAYS = 7
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': "django.db.backends.postgresql_psycopg2",
-        'NAME': os.environ.get('DB_NAME', "athon"),
-        'USER': os.environ.get('DB_USER', "athon"),
-        'PASSWORD': os.environ.get('DB_PASSWD', "athon"),
-        'HOST': os.environ.get('DB_HOST', "localhost"),
-        'PORT': int(os.environ.get('DB_PORT', 5432)),
-        # just in case, add the test database stuff here also
-        'TEST_CHARSET': "utf8",
-    },
-}
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/
@@ -107,9 +96,8 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Parse database configuration from $DATABASE_URL
-DATABASES['default'] = dj_database_url.config()
+DATABASES = {'default': dj_database_url.config(default="postgres://athon:athon@localhost:5432/athon")}
 
 # Enable Connection Pooling
 DATABASES['default']['ENGINE'] = 'django_postgrespool'
