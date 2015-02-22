@@ -1,14 +1,18 @@
 from django.contrib.auth import get_user_model, login, authenticate, logout
 from django.contrib.sites.models import RequestSite, Site
+from django.utils.http import base36_to_int
+from django.utils.translation import gettext_lazy as _
 
-from rest_framework import status
+from rest_framework import status, generics, exceptions
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from athon.models import RegistrationProfile, AthonUser
-from athon.serializers import AthonUserSerializer
+from athon.models import RegistrationProfile, AthonUser, PasswordReset
 from athon.signals import user_registered
+from athon.permissions import IsNotAuthenticated
+from athon.serializers import AthonUserSerializer, ResetPasswordKeySerializer,\
+        ResetPasswordSerializer
 
 
 # helper for extracting data from REST DATA object
@@ -113,3 +117,77 @@ class LogoutView(APIView):
     def post(self, request):
         logout(request)
         return Response(status=status.HTTP_200_OK)
+
+
+class PasswordResetRequestKey(generics.GenericAPIView):
+    """
+    Sends an email to the user email address with a link to reset his password.
+
+    **TODO:** the key should be sent via push notification too.
+
+    **Accepted parameters:**
+
+     * email
+    """
+    permission_classes = (IsNotAuthenticated, )
+    serializer_class = ResetPasswordSerializer
+
+    def post(self, request, format=None):
+        # init form with POST data
+        serializer = self.serializer_class(data=request.DATA)
+        # validate
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                'detail': _(u'We just sent you the link with which you'
+                        u' will able to reset your password at %s') % request.DATA.get('email')
+            })
+        # in case of errors
+        return Response(serializer.errors, status=400)
+
+    def permission_denied(self, request):
+        raise exceptions.PermissionDenied(_("You can't reset your password"
+                        " if you are already authenticated"))
+
+account_password_reset = PasswordResetRequestKey.as_view()
+
+
+class PasswordResetFromKey(generics.GenericAPIView):
+    """
+    Reset password from key.
+
+    **The key must be part of the URL**!
+
+    **Accepted parameters:**
+
+     * password1
+     * password2
+    """
+
+    permission_classes = (IsNotAuthenticated, )
+    serializer_class = ResetPasswordKeySerializer
+
+    def post(self, request, uidb36, key, format=None):
+        # pull out user
+        try:
+            uid_int = base36_to_int(uidb36)
+            password_reset_key = PasswordReset.objects.get(user_id=uid_int, temp_key=key, reset=False)
+        except (ValueError, PasswordReset.DoesNotExist, AttributeError):
+            return Response({'errors': _(u'Key Not Found')}, status=404)
+
+        serializer = ResetPasswordKeySerializer(
+            data=request.DATA,
+            instance=password_reset_key
+        )
+
+        # validate
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'detail': _(u'Password successfully changed.')})
+        # in case of errors
+        return Response(serializer.errors, status=400)
+
+    def permission_denied(self, request):
+        raise exceptions.PermissionDenied(_("You can't reset your password if you are already authenticated"))
+
+account_password_reset_key = PasswordResetFromKey.as_view()

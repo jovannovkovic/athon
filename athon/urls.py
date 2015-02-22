@@ -3,7 +3,7 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from rest_framework import routers
 
-from athon.views import views, account
+from views import views, account
 
 
 def if_debug(*args, **kwargs):
@@ -36,6 +36,9 @@ urlpatterns = patterns('',
     url(r'^api/user/(?P<id>[0-9]+)/accept_request/$', views.AcceptRequestToFollowUserView.as_view()),
     url(r'^api/user/(?P<id>[0-9]+)/following/$', views.FollowingUserView.as_view()),
     url(r'^api/user/(?P<id>[0-9]+)/followers/$', views.FollowersUserView.as_view()),
+    url(r'^api/user/password/reset/$', 'account_password_reset', name='api_account_password_reset'),
+    url(r'^api/user/password/reset/(?P<uidb36>[0-9A-Za-z]+)-(?P<key>.+)/$',
+            'account_password_reset_key', name='api_account_password_reset_key'),
 
 )
 

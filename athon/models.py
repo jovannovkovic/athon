@@ -3,15 +3,19 @@ import hashlib
 import random
 import re
 
-from athon.exceptions import FollowingHimselfError
-from athon.signals import user_registered
+from exceptions import FollowingHimselfError
+from signals import user_registered
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator as token_generator
+from django.contrib.sites.models import Site
+from django.core.mail import send_mail
 from django.db import models, transaction
 from django_enumfield import enum
 from django.template.loader import render_to_string
 from django.utils import timezone
+from django.utils.http import int_to_base36
 from django.utils.translation import gettext_lazy as _
 
 from uuid_upload_path.storage import upload_to
@@ -388,6 +392,59 @@ class RegistrationProfile(models.Model):
                                    ctx_dict)
 
         self.user.email_user(subject, message, settings.DEFAULT_FROM_EMAIL)
+
+
+class PasswordResetManager(models.Manager):
+    """ Password Reset Manager """
+
+    def create_for_user(self, user):
+        """ create password reset for specified user """
+        # support passing email address too
+        if type(user) is unicode:
+            user = get_user_model().objects.get(email=user)
+
+        temp_key = token_generator.make_token(user)
+
+        # save it to the password reset model
+        password_reset, created = PasswordReset.objects.get_or_create(user=user,
+                temp_key=temp_key, reset=False)
+        cs = Site.objects.get_current()
+        # send the password reset email
+        subject = _("Password reset email sent")
+        message = render_to_string("account/email_messages/password_reset_key_message.txt", {
+            "user": user,
+            "uid": int_to_base36(user.id),
+            "temp_key": temp_key,
+            "site": cs
+        })
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
+
+        return password_reset
+
+
+class PasswordReset(models.Model):
+    """
+    Password reset Key
+    """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name=_("user"))
+
+    temp_key = models.CharField(_("temp_key"), max_length=100)
+    timestamp = models.DateTimeField(_("timestamp"), auto_now_add=True)
+    reset = models.BooleanField(_("reset yet?"), default=False)
+
+    objects = PasswordResetManager()
+
+    class Meta:
+        verbose_name = _('password reset')
+        verbose_name_plural = _('password resets')
+        app_label = 'athon'
+
+    def __unicode__(self):
+        return "%s (key=%s, reset=%r)" % (
+            self.user.username,
+            self.temp_key,
+            self.reset
+        )
 
 
 def create_athon_user(sender, user=None, **kwargs):
