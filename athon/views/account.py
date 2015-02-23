@@ -111,6 +111,13 @@ class CheckEmailView(APIView):
             return Response(status=status.HTTP_200_OK)
 
 
+class CheckSessionView(APIView):
+    permission_classes = [AllowAny]
+    model = get_user_model()
+
+    def get(self, request):
+        return Response(AthonUserSerializer(request.user.athon_user).data)
+
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
