@@ -47,7 +47,8 @@ class AthonUserSerializer(DRFModelSerializer):
     """ Serializer for AthonUser entity which includes django's user entity.
 
     """
-    user = _UserSerializer()
+    username = serializers.Field(source='user.username')
+    email = serializers.Field(source='user.email')
     gender = IntegerField(required=False)
 
     class Meta:
