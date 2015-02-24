@@ -1,5 +1,8 @@
+import datetime
+
 from django.contrib.auth import get_user_model, login, authenticate, logout
 from django.contrib.sites.models import RequestSite, Site
+from django.utils import timezone
 from django.utils.http import base36_to_int
 from django.utils.translation import gettext_lazy as _
 
@@ -13,6 +16,9 @@ from athon.signals import user_registered
 from athon.permissions import IsNotAuthenticated
 from athon.serializers import AthonUserSerializer, ResetPasswordKeySerializer,\
         ResetPasswordSerializer
+
+
+REGISTRATION_ALLOWED_FOR = 10
 
 
 # helper for extracting data from REST DATA object
@@ -70,9 +76,17 @@ class AuthenticateView(APIView):
                 login(request, user)
                 return Response(AthonUserSerializer(user.athon_user).data)
             else:
+                if self.is_allowed_to_login(user):
+                    login(request, user)
+                    return Response(AthonUserSerializer(user.athon_user).data)
                 return Response(status=status.HTTP_401_UNAUTHORIZED)
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+    def is_allowed_to_login(self, user):
+        if (user.date_joined + datetime.timedelta(minutes=REGISTRATION_ALLOWED_FOR)) < timezone.now():
+            return False
+        return True
 
 
 class CheckUsernameView(APIView):

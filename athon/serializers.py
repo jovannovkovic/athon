@@ -56,7 +56,7 @@ class AthonUserSerializer(DRFModelSerializer):
         read_only_fields = (
             "followers_number", "following_number"
         )
-        exclude = ('follow_users',)
+        exclude = ('follow_users', 'user')
 
 
 class FollowAthonUserSerializer(serializers.ModelSerializer):
