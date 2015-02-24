@@ -221,7 +221,7 @@ class AthonUser(models.Model):
     height = models.CharField(max_length=10, null=True, blank=True)
     weight = models.CharField(max_length=10, null=True, blank=True)
     follow_users = models.ManyToManyField('self', through='FollowUsers',
-                                          symmetrical=False, related_name='related_to_following')
+                symmetrical=False, related_name='related_to_following')
     following_number = models.PositiveIntegerField(default=0)
     # fallowers_user = models.ManyToManyField('self', through='Fallowers')
     followers_number = models.PositiveIntegerField(default=0)
@@ -234,6 +234,64 @@ class AthonUser(models.Model):
     @classmethod
     def create_empty(cls, user):
         return cls.objects.create(user=user)
+
+
+class Unit(models.Model):
+    name = models.CharField(max_length=125, null=True, blank=True,
+                verbose_name='Npr. Kilogrami')
+    hint = models.CharField(max_length=5, null=True, blank=True,
+                verbose_name='Npr. kg')
+
+
+class Repetition(models.Model):
+    unit = models.ForeignKey(Unit, null=True, blank=True)
+    quantity = models.PositiveSmallIntegerField(null=True, blank=True)
+    repetition = models.PositiveSmallIntegerField(null=True, blank=True)
+
+
+class ExerciseType(models.Model):
+
+    name = models.CharField(max_length=125, null=True, blank=True)
+    # tags = []
+    unit = models.ForeignKey(Unit, null=True, blank=True)
+    quantity = models.BooleanField(default=False)
+    repetition = models.BooleanField(default=False)
+
+
+class ActivityType(models.Model):
+    name = models.CharField(max_length=125, null=True, blank=True,
+            verbose_name='Npr. Rounds')
+    hint = models.CharField(max_length=5, null=True, blank=True,
+            verbose_name='Npr. Create training with rounds')
+
+
+class ActivityTypeInfo(models.Model):
+    description = models.CharField(max_length=125, null=True, blank=True)
+    quantity = models.CharField(max_length=125, null=True, blank=True)
+
+
+class Exercise(models.Model):
+    exercise_type = models.ForeignKey(ExerciseType)
+    repetition = models.ManyToManyField(Repetition)
+
+
+class Post(models.Model):
+
+    user = models.OneToOneField(AthonUser, related_name='shares')
+    activity = models.CharField(max_length=125, null=True, blank=True)
+    activity_name = models.CharField(max_length=225, null=True, blank=True)
+    photo = models.ImageField(upload_to=upload_to,
+                null=True, blank=True)
+    duration = models.TimeField(null=True, blank=True)
+    status = models.CharField(max_length=300, null=True, blank=True)
+    location = models.CharField(max_length=100, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, blank=True)
+    hidden = models.BooleanField(default=False)
+    type = models.ForeignKey(ActivityType, null=True, blank=True, default=None)
+    info = models.ForeignKey(ActivityTypeInfo, null=True, blank=True, default=None)
+
+
+
 
 
 """ USER REGISTRATION MODELS
