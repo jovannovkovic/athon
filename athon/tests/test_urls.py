@@ -37,6 +37,36 @@ def test_user_registration():
 
 
 @pytest.mark.django_db
+def test_user_login_before_activation():
+    """ Testing the login before activation proces. """
+
+    api_client = APIClient()  # not logged in clients should be able to register
+    response = api_client.post(
+        "/api/user/register/",
+        {
+            "username": USERNAME, "password": PASSWORD,
+            "email": EMAIL,
+        },
+        format='json')
+    assert response.status_code == status.HTTP_201_CREATED
+    user = get_user_model().objects.get(username=USERNAME, email=EMAIL)
+    assert user is not None
+    assert user.is_active == False
+    assert user.athon_user is not None
+    assert models.RegistrationProfile.objects.get(user=user).activation_key != models.RegistrationProfile.ACTIVATED
+
+    response = api_client.post(
+        "/api/user/login/",
+        {
+            "username": USERNAME, "password": PASSWORD
+        },
+        format='json')
+
+    print response
+    assert response.status_code == status.HTTP_201_CREATED
+
+
+@pytest.mark.django_db
 def test_user_activate():
     """ Testing activation proces. """
 
