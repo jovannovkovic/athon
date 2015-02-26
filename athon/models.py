@@ -73,8 +73,8 @@ class FollowUsers(models.Model):
     """
     objects = FollowUsersManager()
 
-    follower = models.ForeignKey('AthonUser', related_name="following")
-    followed_user = models.ForeignKey('AthonUser', related_name="followers")
+    follower = models.ForeignKey('Profile', related_name="following")
+    followed_user = models.ForeignKey('Profile', related_name="followers")
     follow_status = enum.EnumField(FollowStatus)
     request_status = models.BooleanField(default=False)
     date_started = models.DateTimeField(auto_now_add=True, blank=True)
@@ -90,10 +90,10 @@ class FollowUsers(models.Model):
         return "fallower %s - fallowed %s" % (self.follower, self.followed_user)
 
 
-class AthonUserManager(models.Manager):
+class ProfileManager(models.Manager):
 
     def get_queryset(self):
-        return super(AthonUserManager, self).get_queryset().select_related(
+        return super(ProfileManager, self).get_queryset().select_related(
                 'user').prefetch_related('athlete_history')
 
     def follow(self, follower, followed_user):
@@ -203,14 +203,14 @@ class AthonUserManager(models.Manager):
 #     date_started = models.DateTimeField(auto_now_add=True, blank=True)
 
 
-class AthonUser(models.Model):
+class Profile(models.Model):
     """ Dodatna polja za user-a.
 
     """
-    objects = AthonUserManager()
+    objects = ProfileManager()
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL,
-                                related_name="athon_user")
+                                related_name="profile")
     gender = enum.EnumField(Gender)
     birthday = models.DateField(null=True, blank=True)
     hometown = models.CharField(max_length=225, null=True, blank=True)
@@ -277,7 +277,7 @@ class Exercise(models.Model):
 
 class Post(models.Model):
 
-    user = models.OneToOneField(AthonUser, related_name='shares')
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name='posts')
     activity = models.CharField(max_length=125, null=True, blank=True)
     activity_name = models.CharField(max_length=225, null=True, blank=True)
     photo = models.ImageField(upload_to=upload_to,
@@ -505,8 +505,8 @@ class PasswordReset(models.Model):
         )
 
 
-def create_athon_user(sender, user=None, **kwargs):
-    AthonUser.create_empty(user)
+def create_profile(sender, user=None, **kwargs):
+    Profile.create_empty(user)
 
 
-user_registered.connect(create_athon_user)
+user_registered.connect(create_profile)

@@ -11,10 +11,10 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from athon.models import RegistrationProfile, AthonUser, PasswordReset
+from athon.models import RegistrationProfile, PasswordReset
 from athon.signals import user_registered
 from athon.permissions import IsNotAuthenticated
-from athon.serializers import AthonUserSerializer, ResetPasswordKeySerializer,\
+from athon.serializers import UserSerializer, ResetPasswordKeySerializer,\
         ResetPasswordSerializer
 
 
@@ -54,18 +54,18 @@ class ActivationView(APIView):
 
     """
     permission_classes = [AllowAny]
-    model = AthonUser
+    model = get_user_model()
 
     def post(self, request):
         activation_key = request.QUERY_PARAMS.get('ac')
         user = RegistrationProfile.objects.activate_user(activation_key)
         login(request, user)
-        return Response(AthonUserSerializer(user.athon_user).data)
+        return Response(UserSerializer(user).data)
 
 
 class AuthenticateView(APIView):
     permission_classes = [AllowAny]
-    model = AthonUser
+    model = get_user_model()
 
     def post(self, request):
         username = data(request, 'username')
@@ -74,11 +74,11 @@ class AuthenticateView(APIView):
         if user is not None:
             if user.is_active:
                 login(request, user)
-                return Response(AthonUserSerializer(user.athon_user).data)
+                return Response(UserSerializer(user).data)
             else:
                 if self.is_allowed_to_login(user):
                     login(request, user)
-                    return Response(AthonUserSerializer(user.athon_user).data)
+                    return Response(UserSerializer(user).data)
                 return Response(status=status.HTTP_401_UNAUTHORIZED)
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)
@@ -130,7 +130,8 @@ class CheckSessionView(APIView):
     model = get_user_model()
 
     def get(self, request):
-        return Response(AthonUserSerializer(request.user.athon_user).data)
+        return Response(UserSerializer(request.user).data)
+
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]

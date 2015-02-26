@@ -18,7 +18,7 @@ def user():
     user = User(username=TEST_USERNAME, email=TEST_EMAIL, is_active=False)
     user.set_password(TEST_PASSWORD)
     user.save()
-    models.AthonUser.create_empty(user)
+    models.Profile.create_empty(user)
     return user
 
 
@@ -27,7 +27,7 @@ def another_user():
     user = User(username=TEST_USERNAME_1, email=TEST_EMAIL_1)
     user.set_password(TEST_PASSWORD_1)
     user.save()
-    models.AthonUser.create_empty(user)
+    models.Profile.create_empty(user)
     return user
 
 

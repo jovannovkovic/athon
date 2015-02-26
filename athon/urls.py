@@ -17,7 +17,7 @@ def if_debug(*args, **kwargs):
 # before `user`), or else you'll get that method is not allowed on request.
 router = routers.DefaultRouter()
 # router.register(r'user/register', views.UserRegister)
-router.register(r'user', views.AthonUserView)
+router.register(r'user', views.ProfileView)
 
 urlpatterns = patterns('',
     url(r'^api/user/register/$', account.RegistrationView.as_view()),
