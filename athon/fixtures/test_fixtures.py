@@ -43,4 +43,10 @@ def api_client():
     return APIClient()
 
 
+@pytest.fixture
+def sports():
+    sport1 = models.Sport.objects.create(name='Fudbal')
+    sport2 = models.Sport.objects.create(name='Kosarka')
+    return [sport1, sport2]
+
 

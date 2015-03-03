@@ -202,12 +202,12 @@ def test_update_user(logged_client, another_user):
 
 
 @pytest.mark.django_db
-def test_user_create_athlete_histories(logged_client):
+def test_user_create_athlete_histories(logged_client, sports):
     response = logged_client.post(
         "/api/user/athlete_histories/",
             [
                 {
-                    'sport': 'Kosarka',
+                    'sport': sports[0].id,
                     'from_date': 2003,
                     'until_date': 2005,
                     'achievements': [
@@ -220,7 +220,7 @@ def test_user_create_athlete_histories(logged_client):
                     ]
                 },
                 {
-                    'sport': 'Fudbal',
+                    'sport': sports[1].id,
                     'from_date': 2005,
                     'until_date': 2005,
                     'achievements': [
@@ -238,7 +238,7 @@ def test_user_create_athlete_histories(logged_client):
         "/api/user/athlete_histories/",
             [
                 {
-                    'sport': 'Fudbal',
+                    'sport': sports[1].id,
                     'from_date': 2005,
                     'until_date': 2005,
                     'achievements': [
@@ -255,12 +255,12 @@ def test_user_create_athlete_histories(logged_client):
 
 
 @pytest.mark.django_db
-def test_user_update_athlete_histories(logged_client):
+def test_user_update_athlete_histories(logged_client, sports):
     logged_client.post(
         "/api/user/athlete_histories/",
             [
                 {
-                    'sport': 'Kosarka',
+                    'sport': sports[1].id,
                     'from_date': 2003,
                     'until_date': 2005,
                     'achievements': [
@@ -270,7 +270,7 @@ def test_user_update_athlete_histories(logged_client):
                     ]
                 },
                 {
-                    'sport': 'Fudbal',
+                    'sport': sports[0].id,
                     'from_date': 2005,
                     'until_date': 2005,
                     'achievements': [
@@ -286,11 +286,11 @@ def test_user_update_athlete_histories(logged_client):
     response = logged_client.put(
         "/api/user/athlete_histories/%s/" % ah.id,
             {
-                'sport': 'AAA',
+                'sport': sports[1].id,
             }
         , format='json')
     assert response.status_code == status.HTTP_200_OK
-    assert response.data['sport'] == 'AAA'
+    assert response.data['sport'] == sports[1].id
     assert response.data['id'] == ah.id
 
     ach = ah.achievements.all()[0]
@@ -298,7 +298,7 @@ def test_user_update_athlete_histories(logged_client):
     response = logged_client.put(
         "/api/user/athlete_histories/%s/" % ah.id,
             {
-                'sport': 'Fudbal',
+                'sport': sports[0].id,
                 'from_date': 2005,
                 'until_date': 2004,
                 'achievements': [
@@ -316,12 +316,12 @@ def test_user_update_athlete_histories(logged_client):
 
 
 @pytest.mark.django_db
-def test_user_delete_athlete_histories(logged_client):
-    logged_client.post(
+def test_user_delete_athlete_histories(logged_client, sports):
+    response = logged_client.post(
         "/api/user/athlete_histories/",
             [
                 {
-                    'sport': 'Kosarka',
+                    'sport': sports[0].id,
                     'from_date': 2003,
                     'until_date': 2005,
                     'achievements': [
@@ -331,7 +331,7 @@ def test_user_delete_athlete_histories(logged_client):
                     ]
                 },
                 {
-                    'sport': 'Fudbal',
+                    'sport': sports[1].id,
                     'from_date': 2005,
                     'until_date': 2005,
                     'achievements': [
@@ -344,14 +344,13 @@ def test_user_delete_athlete_histories(logged_client):
         , format='json')
     a_user = get_user_model().objects.get(username=TEST_USERNAME).profile
     ah_set = a_user.athlete_histories.all()
-    ah_first = ah_set[1]
     assert ah_set.count() == 2
+    ah_first_id = response.data[0]['id']
     response = logged_client.delete(
-        "/api/user/athlete_histories/%s/" % ah_set[0].id)
-    print response
+        "/api/user/athlete_histories/%s/" % response.data[1]['id'])
     assert response.status_code == status.HTTP_200_OK
     ah_set = a_user.athlete_histories.all()
-    assert ah_set[0] == ah_first
+    assert ah_set[0].id == ah_first_id
     assert ah_set.count() == 1
 
 

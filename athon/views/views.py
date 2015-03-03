@@ -242,11 +242,30 @@ def chain_followers_list(follow_list, user_follow_list, user_id):
     return l
 
 
-class UnitsView(generics.ListAPIView):
+class SportView(generics.ListAPIView):
+    model = models.Sport
+
+    def get_queryset(self):
+        return models.Sport.objects.all()
+
+
+class UnitView(generics.ListAPIView):
     model = models.Unit
 
     def get_queryset(self):
         return models.Unit.objects.all()
 
 
+class ActivityTypeView(generics.ListAPIView):
+    model = models.ActivityType
+
+    def get_queryset(self):
+        return models.ActivityType.objects.all()
+
+
+class ExerciseTypeView(generics.ListAPIView):
+    model = models.ExerciseType
+
+    def get_queryset(self):
+        return models.ExerciseType.objects.all()
 

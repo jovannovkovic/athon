@@ -20,8 +20,8 @@ router = routers.DefaultRouter()
 router.register(r'user', views.ProfileView)
 
 urlpatterns = patterns('',
-    url(r'^api/user/athlete_histories/$', views.AthleteHistoryView.as_view()),
-    url(r'^api/user/athlete_histories/(?P<id>[0-9]+)/$', views.AthleteHistoryDetailView.as_view()),
+    url(r'^api/user/athlete_history/$', views.AthleteHistoryView.as_view()),
+    url(r'^api/user/athlete_history/(?P<id>[0-9]+)/$', views.AthleteHistoryDetailView.as_view()),
     url(r'^api/user/register/$', account.RegistrationView.as_view()),
     url(r'^user/activate/(?P<activation_key>\w+)/$', views.IndexView.as_view(),
         name='registration_activate'),
@@ -42,9 +42,10 @@ urlpatterns = patterns('',
     url(r'^api/user/password/reset/$', 'account_password_reset', name='api_account_password_reset'),
     url(r'^api/user/password/reset/(?P<uidb36>[0-9A-Za-z]+)-(?P<key>.+)/$',
             'account_password_reset_key', name='api_account_password_reset_key'),
-    # url(r'^api/post/units/$', views.UnitsView.as_view()),
-    # url(r'^api/post/activity_types/$', views.ActivityTypesView.as_view()),
-    # url(r'^api/post/exercise_types/$', views.ExerciseTypesView.as_view()),
+    url(r'^api/sport/$', views.SportView.as_view()),
+    url(r'^api/post/unit/$', views.UnitView.as_view()),
+    url(r'^api/post/activity_type/$', views.ActivityTypeView.as_view()),
+    url(r'^api/post/exercise_type/$', views.ExerciseTypeView.as_view()),
 )
 
 urlpatterns += patterns('',

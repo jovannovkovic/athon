@@ -198,12 +198,16 @@ class Profile(models.Model):
         return cls.objects.create(user=user)
 
 
+class Sport(models.Model):
+    name = models.CharField(max_length=50)
+
+
 class AthleteHistory(models.Model):
     """ User sport history and achievements.
 
     """
     profile = models.ForeignKey(Profile, null=True, blank=True, related_name='athlete_histories')
-    sport = models.CharField(max_length=225, null=True, blank=True)
+    sport = models.ForeignKey(Sport, null=True, blank=True)
     from_date = models.IntegerField(null=True, blank=True)
     until_date = models.IntegerField(null=True, blank=True)
 
