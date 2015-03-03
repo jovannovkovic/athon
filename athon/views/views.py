@@ -50,6 +50,49 @@ class ProfileView(mixins.RetrieveModelMixin,
         mixins.UpdateModelMixin.pre_save(self, obj)
 
 
+class AthleteHistoryView(generics.CreateAPIView):
+
+    model = models.AthleteHistory
+    serializer_class = serializers.AthleteHistorySerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.DATA, many=True,
+                        context={'profile': self.request.user.profile})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AthleteHistoryDetailView(generics.UpdateAPIView, generics.DestroyAPIView):
+    model = models.AthleteHistory
+    serializer_class = serializers.AthleteHistorySerializer
+
+    def put(self, request, *args, **kwargs):
+        pk = self.kwargs.get('id', None)
+        try:
+            athlete_history = models.AthleteHistory.objects.get(pk=pk,
+                        profile=self.request.user.profile)
+        except models.AthleteHistory.DoesNotExist:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        serializer = self.serializer_class(athlete_history, data=request.DATA, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, *args, **kwargs):
+        pk = self.kwargs.get('id', None)
+        try:
+            athlete_history = models.AthleteHistory.objects.get(pk=pk,
+                        profile=self.request.user.profile)
+        except models.AthleteHistory.DoesNotExist:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        athlete_history.delete()
+        return Response(status=status.HTTP_200_OK)
+
+
+
 class FollowUserView(views.APIView):
     # model = models.FollowUsers
 

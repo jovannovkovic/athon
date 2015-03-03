@@ -24,24 +24,6 @@ from enums import Gender, FollowStatus
 SHA1_RE = re.compile('^[a-f0-9]{40}$')
 
 
-class Achievement(models.Model):
-    """ User achievements in sport.
-
-    """
-    title = models.CharField(max_length=225, null=True, blank=True)
-    year = models.DateField(null=True, blank=True)
-
-
-class AthleteHistory(models.Model):
-    """ User sport history and achievements.
-
-    """
-    sport = models.CharField(max_length=225, null=True, blank=True)
-    from_date = models.DateField(null=True, blank=True)
-    until_date = models.DateField(null=True, blank=True)
-    achievements = models.ManyToManyField(Achievement)
-
-
 class FollowUsersManager(models.Manager):
 
     def get_queryset(self):
@@ -94,7 +76,7 @@ class ProfileManager(models.Manager):
 
     def get_queryset(self):
         return super(ProfileManager, self).get_queryset().select_related(
-                'user').prefetch_related('athlete_history')
+                'user').prefetch_related('athlete_histories')
 
     def follow(self, follower, followed_user):
         if followed_user.is_public_profile:
@@ -183,25 +165,6 @@ class ProfileManager(models.Manager):
         followed_user.followers_number = models.F('followers_number') - 1
         followed_user.save()
 
-# class FallowersUsers(models.Model):
-# """ All users that fallow you.
-#
-#     """
-#     user = models.ForeignKey('AthonUser', related_name="user_fallowers")
-#     fallower_user = models.ForeignKey('AthonUser')
-#     status = enum.EnumField(FallowStatus)
-#     date_started = models.DateTimeField(auto_now_add=True, blank=True)
-#
-#
-# class FallowRequestsUsers(models.Model):
-#     """ All users that want to fallow you, but you didn't allow it.
-#
-#     """
-#     user = models.ForeignKey('AthonUser', related_name="user_fallow_requests")
-#     fallow_request_user = models.ForeignKey('AthonUser')
-#     status = models.BooleanField(default=False)
-#     date_started = models.DateTimeField(auto_now_add=True, blank=True)
-
 
 class Profile(models.Model):
     """ Dodatna polja za user-a.
@@ -226,7 +189,6 @@ class Profile(models.Model):
     # fallowers_user = models.ManyToManyField('self', through='Fallowers')
     followers_number = models.PositiveIntegerField(default=0)
     # fallowers_requests = models.ManyToManyField('self', through='FallowRequests')
-    athlete_history = models.ManyToManyField(AthleteHistory, null=True, blank=True)
 
     def __unicode__(self):
         return "%s" % self.user
@@ -234,6 +196,25 @@ class Profile(models.Model):
     @classmethod
     def create_empty(cls, user):
         return cls.objects.create(user=user)
+
+
+class AthleteHistory(models.Model):
+    """ User sport history and achievements.
+
+    """
+    profile = models.ForeignKey(Profile, null=True, blank=True, related_name='athlete_histories')
+    sport = models.CharField(max_length=225, null=True, blank=True)
+    from_date = models.IntegerField(null=True, blank=True)
+    until_date = models.IntegerField(null=True, blank=True)
+
+
+class Achievement(models.Model):
+    """ User achievements in sport.
+
+    """
+    athlete_history = models.ForeignKey(AthleteHistory, null=True, blank=True, related_name='achievements')
+    title = models.CharField(max_length=225, null=True, blank=True)
+    year = models.IntegerField(null=True, blank=True)
 
 
 class Unit(models.Model):
@@ -245,14 +226,14 @@ class Unit(models.Model):
 
 class Repetition(models.Model):
     unit = models.ForeignKey(Unit, null=True, blank=True)
-    quantity = models.PositiveSmallIntegerField(null=True, blank=True)
-    repetition = models.PositiveSmallIntegerField(null=True, blank=True)
+    quantity = models.PositiveSmallIntegerField(default=0, null=True, blank=True)
+    repetition = models.PositiveSmallIntegerField(default=0, null=True, blank=True)
 
 
 class ExerciseType(models.Model):
 
     name = models.CharField(max_length=125, null=True, blank=True)
-    # tags = []
+    # synonims = []
     unit = models.ForeignKey(Unit, null=True, blank=True)
     quantity = models.BooleanField(default=False)
     repetition = models.BooleanField(default=False)
@@ -271,8 +252,8 @@ class ActivityTypeInfo(models.Model):
 
 
 class Exercise(models.Model):
-    exercise_type = models.ForeignKey(ExerciseType)
-    repetition = models.ManyToManyField(Repetition)
+    type = models.ForeignKey(ExerciseType)
+    reps = models.ManyToManyField(Repetition)
 
 
 class Post(models.Model):

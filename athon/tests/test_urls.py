@@ -181,6 +181,179 @@ def test_update_user(logged_client, another_user):
     assert response.data['id'] == a_user.pk
     assert get_user_model().objects.get(username=TEST_USERNAME).check_password('joca') is True
 
+    first_name = 'another_user'
+    height = '123'
+    response = logged_client.patch(
+        "/api/user/%s/" % a_user.pk,
+        {
+            'first_name': first_name,
+            'profile': {
+                'hometown': hometown,
+                'height': height,
+
+            }
+        }, format='json')
+    print response
+    a_user = get_user_model().objects.get(username=TEST_USERNAME)
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data['id'] == a_user.pk
+    assert response.data['first_name'] == first_name
+    assert response.data['profile']['height'] == height
+
+
+@pytest.mark.django_db
+def test_user_create_athlete_histories(logged_client):
+    response = logged_client.post(
+        "/api/user/athlete_histories/",
+            [
+                {
+                    'sport': 'Kosarka',
+                    'from_date': 2003,
+                    'until_date': 2005,
+                    'achievements': [
+                        {
+                            'title': 'Best player1'
+                        },
+                        {
+                            'title': 'TOP Goalscorer'
+                        }
+                    ]
+                },
+                {
+                    'sport': 'Fudbal',
+                    'from_date': 2005,
+                    'until_date': 2005,
+                    'achievements': [
+                        {
+                            'title': 'Best player'
+                        }
+                    ]
+                }
+            ]
+        , format='json')
+    assert response.status_code == status.HTTP_201_CREATED
+    assert len(response.data) == 2
+
+    response = logged_client.post(
+        "/api/user/athlete_histories/",
+            [
+                {
+                    'sport': 'Fudbal',
+                    'from_date': 2005,
+                    'until_date': 2005,
+                    'achievements': [
+                        {
+                            'title': 'Best player'
+                        }
+                    ]
+                }
+            ]
+        , format='json')
+    a_user = get_user_model().objects.get(username=TEST_USERNAME).profile
+    assert response.status_code == status.HTTP_201_CREATED
+    assert a_user.athlete_histories.count() == 3
+
+
+@pytest.mark.django_db
+def test_user_update_athlete_histories(logged_client):
+    logged_client.post(
+        "/api/user/athlete_histories/",
+            [
+                {
+                    'sport': 'Kosarka',
+                    'from_date': 2003,
+                    'until_date': 2005,
+                    'achievements': [
+                        {
+                            'title': 'Best player1'
+                        }
+                    ]
+                },
+                {
+                    'sport': 'Fudbal',
+                    'from_date': 2005,
+                    'until_date': 2005,
+                    'achievements': [
+                        {
+                            'title': 'Best player'
+                        }
+                    ]
+                }
+            ]
+        , format='json')
+    a_user = get_user_model().objects.get(username=TEST_USERNAME).profile
+    ah = a_user.athlete_histories.all()[0]
+    response = logged_client.put(
+        "/api/user/athlete_histories/%s/" % ah.id,
+            {
+                'sport': 'AAA',
+            }
+        , format='json')
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data['sport'] == 'AAA'
+    assert response.data['id'] == ah.id
+
+    ach = ah.achievements.all()[0]
+    title = 'TOP'
+    response = logged_client.put(
+        "/api/user/athlete_histories/%s/" % ah.id,
+            {
+                'sport': 'Fudbal',
+                'from_date': 2005,
+                'until_date': 2004,
+                'achievements': [
+                    {
+                        'id': ach.pk,
+                        'title': title
+                    }
+                ]
+            }
+        , format='json')
+    a_user = get_user_model().objects.get(username=TEST_USERNAME).profile
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data['achievements'][0]['title'] == title
+    assert a_user.athlete_histories.count() == 2
+
+
+@pytest.mark.django_db
+def test_user_delete_athlete_histories(logged_client):
+    logged_client.post(
+        "/api/user/athlete_histories/",
+            [
+                {
+                    'sport': 'Kosarka',
+                    'from_date': 2003,
+                    'until_date': 2005,
+                    'achievements': [
+                        {
+                            'title': 'Best player1'
+                        }
+                    ]
+                },
+                {
+                    'sport': 'Fudbal',
+                    'from_date': 2005,
+                    'until_date': 2005,
+                    'achievements': [
+                        {
+                            'title': 'Best player'
+                        }
+                    ]
+                }
+            ]
+        , format='json')
+    a_user = get_user_model().objects.get(username=TEST_USERNAME).profile
+    ah_set = a_user.athlete_histories.all()
+    ah_first = ah_set[1]
+    assert ah_set.count() == 2
+    response = logged_client.delete(
+        "/api/user/athlete_histories/%s/" % ah_set[0].id)
+    print response
+    assert response.status_code == status.HTTP_200_OK
+    ah_set = a_user.athlete_histories.all()
+    assert ah_set[0] == ah_first
+    assert ah_set.count() == 1
+
 
 @pytest.mark.django_db
 def test_user_update_image(logged_client):

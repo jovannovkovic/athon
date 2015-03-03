@@ -43,10 +43,34 @@ class _UserSerializer(serializers.ModelSerializer):
             return self.restore_object(attrs, instance=getattr(self, 'object', None))
 
 
+class AchievementSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Achievement
+        fields = ('id', 'title', 'year')
+
+
+class AthleteHistorySerializer(serializers.ModelSerializer):
+
+    achievements = AchievementSerializer(many=True, required=False)
+
+    class Meta:
+        model = models.AthleteHistory
+        fields = ('id', 'sport', 'from_date', 'until_date', 'achievements', 'profile')
+
+    def save_object(self, obj, **kwargs):
+        profile = self.context.get('profile', None)
+        if profile is not None:
+            obj.profile = profile
+        super(AthleteHistorySerializer, self).save_object(obj, **kwargs)
+
+
+
 class ProfileSerializer(serializers.ModelSerializer):
     """ Serializer for Profile entity which includes django's user entity.
 
     """
+    athlete_histories = AthleteHistorySerializer(many=True)
     gender = IntegerField(required=False)
 
     class Meta:
