@@ -77,7 +77,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         read_only_fields = (
             "followers_number", "following_number"
         )
-        exclude = ('follow_users', 'user')
+        exclude = ('follow_users', 'user', 'is_active')
 
 
 class UserSerializer(serializers.ModelSerializer):
