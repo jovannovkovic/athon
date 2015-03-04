@@ -1,13 +1,13 @@
 from itertools import izip as zip, count, compress
 
-from athon import models, serializers, enums
+from athon import models, serializers, enums, permissions
 
 from django.views.generic.base import TemplateView
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 
-from rest_framework import viewsets, mixins, permissions, \
-        generics, views
+from rest_framework import viewsets, mixins, \
+        generics, views, permissions as rest_permissions
 from rest_framework import status
 from rest_framework.response import Response
 
@@ -24,6 +24,7 @@ class _UserManagementViews(viewsets.GenericViewSet):
     # serializer_class = serializers.AthonUserSerializer
     model = get_user_model()
     serializer_class = serializers.UserSerializer
+    permission_classes = (permissions.IsUserOrAdmin,)
 
     def pre_save(self, obj):
         """ We have to encode the password in the user object that will be
@@ -265,6 +266,7 @@ class ActivityTypeView(generics.ListAPIView):
 
 class ExerciseTypeView(generics.ListAPIView):
     model = models.ExerciseType
+    serializer_class = serializers.ExerciseTypeSerializer
 
     def get_queryset(self):
         return models.ExerciseType.objects.all()

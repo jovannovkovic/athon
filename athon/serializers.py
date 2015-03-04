@@ -65,7 +65,6 @@ class AthleteHistorySerializer(serializers.ModelSerializer):
         super(AthleteHistorySerializer, self).save_object(obj, **kwargs)
 
 
-
 class ProfileSerializer(serializers.ModelSerializer):
     """ Serializer for Profile entity which includes django's user entity.
 
@@ -112,9 +111,6 @@ class UserSerializer(serializers.ModelSerializer):
 
         if not self._errors:
             return self.restore_object(attrs, instance=getattr(self, 'object', None))
-
-
-
 
 
 class FollowAthonUserSerializer(serializers.ModelSerializer):
@@ -192,3 +188,40 @@ class ResetPasswordKeySerializer(serializers.Serializer):
         instance.save()
 
         return instance
+
+
+class SportSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Sport
+        fields = ('id', 'name')
+
+
+class ActivityTypeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.ActivityType
+        fields = ('id', 'name', 'hint')
+
+
+class ActivityTypeInfoSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.ActivityTypeInfo
+        fields = ('id', 'description', 'quantity')
+
+
+class UnitSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Unit
+        fields = ('id', 'name', 'hint')
+
+
+class ExerciseTypeSerializer(serializers.ModelSerializer):
+
+    unit = UnitSerializer()
+
+    class Meta:
+        model = models.ExerciseType
+        fields = ('id', 'name', 'unit', 'quantity', 'repetition')

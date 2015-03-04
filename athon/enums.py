@@ -24,3 +24,15 @@ class FollowStatus(enum.Enum):
     FOLLOW: _('Follow'),
     FOLLOWING: _('Following')
     }
+
+
+class Unit(enum.Enum):
+    """ Enumeration for follow status (follow, following). """
+
+    METRIC = 1
+    US = 2
+
+    labels = {
+    METRIC: _('Metric'),
+    US: _('US')
+    }

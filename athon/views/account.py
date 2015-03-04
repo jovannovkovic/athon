@@ -72,11 +72,13 @@ class AuthenticateView(APIView):
         password = data(request, 'password')
         user = authenticate(username=username, password=password)
         if user is not None:
-            if user.is_active:
+            profile = user.profile
+            if profile.is_active:
                 login(request, user)
                 return Response(UserSerializer(user).data)
             else:
                 if self.is_allowed_to_login(user):
+                    print "b"*20
                     login(request, user)
                     return Response(UserSerializer(user).data)
                 return Response(status=status.HTTP_401_UNAUTHORIZED)

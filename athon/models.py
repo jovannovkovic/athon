@@ -19,7 +19,7 @@ from django.utils.http import int_to_base36
 from django.utils.translation import gettext_lazy as _
 
 from uuid_upload_path.storage import upload_to
-from enums import Gender, FollowStatus
+from enums import Gender, FollowStatus, Unit as EnumUnit
 
 SHA1_RE = re.compile('^[a-f0-9]{40}$')
 
@@ -177,18 +177,19 @@ class Profile(models.Model):
     gender = enum.EnumField(Gender)
     birthday = models.DateField(null=True, blank=True)
     hometown = models.CharField(max_length=225, null=True, blank=True)
-    metric = models.BooleanField(default=False)
+    unit = enum.EnumField(EnumUnit)
     profile_photo = models.ImageField(upload_to=upload_to,
                                       null=True, blank=True)
     is_public_profile = models.BooleanField(default=True)
-    height = models.CharField(max_length=10, null=True, blank=True)
-    weight = models.CharField(max_length=10, null=True, blank=True)
+    height = models.FloatField(default=0)
+    weight = models.FloatField(default=0)
     follow_users = models.ManyToManyField('self', through='FollowUsers',
                 symmetrical=False, related_name='related_to_following')
     following_number = models.PositiveIntegerField(default=0)
     # fallowers_user = models.ManyToManyField('self', through='Fallowers')
     followers_number = models.PositiveIntegerField(default=0)
     # fallowers_requests = models.ManyToManyField('self', through='FallowRequests')
+    is_active = models.BooleanField(default=False)
 
     def __unicode__(self):
         return "%s" % self.user
@@ -234,7 +235,15 @@ class Repetition(models.Model):
     repetition = models.PositiveSmallIntegerField(default=0, null=True, blank=True)
 
 
+class ExerciseTypeManager(models.Manager):
+
+    def get_queryset(self):
+        return super(ExerciseTypeManager, self).get_queryset().select_related(
+                'unit')
+
+
 class ExerciseType(models.Model):
+    objects = ExerciseTypeManager()
 
     name = models.CharField(max_length=125, null=True, blank=True)
     # synonims = []
@@ -293,7 +302,8 @@ class RegistrationManager(models.Manager):
 
             if not profile.activation_key_expired():
                 user = profile.user
-                user.is_active = True
+                user_profile = user.profile
+                user_profile.is_active = True
                 user.save()
                 user.backend = settings.AUTHENTICATION_BACKENDS[0]
                 profile.activation_key = self.model.ACTIVATED
@@ -307,8 +317,6 @@ class RegistrationManager(models.Manager):
                              site):
         user_model = get_user_model()
         user = user_model.objects.create_user(username, email, password)
-        user.is_active = False
-        user.save()
         profile = self.create_profile(user)
         profile.send_activation_email(site)
 
