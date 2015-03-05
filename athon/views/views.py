@@ -1,3 +1,4 @@
+from datetime import datetime, date
 from itertools import izip as zip, count, compress
 
 from athon import models, serializers, enums, permissions
@@ -43,6 +44,13 @@ class ProfileView(mixins.RetrieveModelMixin,
     The caller has to be logged in as that user or as administrator.
 
     """
+
+    def update(self, request, *args, **kwargs):
+        if "birthday" in self.request.DATA['profile']:
+            b = self.request.DATA['profile']['birthday']
+            birthday = date(b[0], b[1], b[2])
+            self.request.DATA['profile']['birthday'] = birthday
+        return super(ProfileView, self).update(request, *args, **kwargs)
 
     def pre_save(self, obj):
         """ We have to use both inherited pre_save methods here.
@@ -91,7 +99,6 @@ class AthleteHistoryDetailView(generics.UpdateAPIView, generics.DestroyAPIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         athlete_history.delete()
         return Response(status=status.HTTP_200_OK)
-
 
 
 class FollowUserView(views.APIView):
@@ -271,3 +278,16 @@ class ExerciseTypeView(generics.ListAPIView):
     def get_queryset(self):
         return models.ExerciseType.objects.all()
 
+
+class PostView(generics.ListCreateAPIView):
+    model = models.Post
+    serializer_class = serializers.PostSerializer
+    permission_classes = (rest_permissions.IsAuthenticated,)
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.DATA,
+                        context={'user': self.request.user})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

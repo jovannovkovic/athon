@@ -147,7 +147,8 @@ def test_update_user(logged_client, another_user):
         "/api/user/%s/.json" % a_user.pk,
         {
             'profile': {
-                'hometown': hometown
+                'hometown': hometown,
+                'birthday': [2011, 2, 1]
             }
         }, format='json')
     assert response.status_code == status.HTTP_200_OK
