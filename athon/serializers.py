@@ -231,29 +231,36 @@ class RepetitionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Repetition
-        fields = ('unit', 'quantity', 'repetition')
+        fields = ('id', 'unit', 'quantity', 'repetition')
 
 
 class ExerciseSerializer(serializers.ModelSerializer):
 
-    reps = RepetitionSerializer(many=True, allow_add_remove=True)
+    reps = RepetitionSerializer(many=True, required=False)
 
     class Meta:
         model = models.Exercise
-        fields = ('type', 'reps')
+        fields = ('id', 'type', 'reps')
+
+    def save_object(self, obj, **kwargs):
+        post = self.context.get('post', None)
+        if post is not None:
+            obj.post = post
+        return super(ExerciseSerializer, self).save_object(obj, **kwargs)
 
 
 class PostSerializer(serializers.ModelSerializer):
 
-    info = ActivityTypeInfoSerializer()
-    exercise = ExerciseSerializer(many=True, allow_add_remove=True)
+    info = ActivityTypeInfoSerializer(required=False)
+    exercise = ExerciseSerializer(many=True, read_only=True)
 
     class Meta:
         model = models.Post
-        exclude = ('hidden',)
+        exclude = ('hidden', 'user')
 
     def save_object(self, obj, **kwargs):
         user = self.context.get('user', None)
         if user is not None:
             obj.user = user
-        super(AthleteHistorySerializer, self).save_object(obj, **kwargs)
+        super(PostSerializer, self).save_object(obj, **kwargs)
+

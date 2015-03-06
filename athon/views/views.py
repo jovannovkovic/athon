@@ -285,9 +285,21 @@ class PostView(generics.ListCreateAPIView):
     permission_classes = (rest_permissions.IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
+        data = request.DATA
         serializer = self.serializer_class(data=request.DATA,
                         context={'user': self.request.user})
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            exercise_data = data.pop('exercise')
+            exer_serializer = serializers.ExerciseSerializer(many=True, data=exercise_data)
+            if exer_serializer.is_valid():
+                serializer.save()
+                post_id = serializer.data['id']
+                post = models.Post.objects.get(id=post_id)
+                for i in range(len(exercise_data)):
+                    exercise_serializer = serializers.ExerciseSerializer(data=exercise_data[i],
+                                context={'post': post})
+                    if exercise_serializer.is_valid():
+                        exercise_serializer.save()
+                serializer = serializers.PostSerializer(models.Post.objects.get(id=post_id))
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

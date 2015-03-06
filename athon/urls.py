@@ -46,6 +46,7 @@ urlpatterns = patterns('',
     url(r'^api/post/unit/$', views.UnitView.as_view()),
     url(r'^api/post/activity_type/$', views.ActivityTypeView.as_view()),
     url(r'^api/post/exercise_type/$', views.ExerciseTypeView.as_view()),
+    url(r'^api/post/$', views.PostView.as_view()),
 )
 
 urlpatterns += patterns('',

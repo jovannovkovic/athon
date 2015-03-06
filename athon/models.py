@@ -229,12 +229,6 @@ class Unit(models.Model):
                 verbose_name='Npr. kg')
 
 
-class Repetition(models.Model):
-    unit = models.ForeignKey(Unit, null=True, blank=True)
-    quantity = models.PositiveSmallIntegerField(default=0, null=True, blank=True)
-    repetition = models.PositiveSmallIntegerField(default=0, null=True, blank=True)
-
-
 class ExerciseTypeManager(models.Manager):
 
     def get_queryset(self):
@@ -255,7 +249,7 @@ class ExerciseType(models.Model):
 class ActivityType(models.Model):
     name = models.CharField(max_length=125, null=True, blank=True,
             verbose_name='Npr. Rounds')
-    hint = models.CharField(max_length=5, null=True, blank=True,
+    hint = models.CharField(max_length=125, null=True, blank=True,
             verbose_name='Npr. Create training with rounds')
 
 
@@ -264,14 +258,9 @@ class ActivityTypeInfo(models.Model):
     quantity = models.CharField(max_length=125, null=True, blank=True)
 
 
-class Exercise(models.Model):
-    type = models.ForeignKey(ExerciseType)
-    reps = models.ManyToManyField(Repetition)
-
-
 class Post(models.Model):
 
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name='posts')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='posts')
     activity = models.CharField(max_length=125, null=True, blank=True)
     activity_name = models.CharField(max_length=225, null=True, blank=True)
     photo = models.ImageField(upload_to=upload_to,
@@ -283,7 +272,20 @@ class Post(models.Model):
     hidden = models.BooleanField(default=False)
     type = models.ForeignKey(ActivityType, null=True, blank=True, default=None)
     info = models.ForeignKey(ActivityTypeInfo, null=True, blank=True, default=None)
-    exercise = models.ForeignKey(Exercise, null=True, blank=True)
+
+
+class Exercise(models.Model):
+    post = models.ForeignKey(Post, null=True, blank=True, related_name='exercise')
+    type = models.ForeignKey(ExerciseType)
+
+
+class Repetition(models.Model):
+    exercise = models.ForeignKey(Exercise, null=True, blank=True, related_name='reps')
+    unit = models.ForeignKey(Unit, null=True, blank=True)
+    quantity = models.PositiveSmallIntegerField(default=0, null=True, blank=True)
+    repetition = models.PositiveSmallIntegerField(default=0, null=True, blank=True)
+
+
 
 
 

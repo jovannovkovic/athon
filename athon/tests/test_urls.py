@@ -559,4 +559,79 @@ def test_email_exist(api_client, user):
     assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
+@pytest.mark.django_db
+def test_user_post(logged_client, another_user, exercise_type, activity_type):
+    units = models.Unit.objects.all()
+    user =  get_user_model().objects.get(username=TEST_USERNAME)
+    response = logged_client.post(
+        "/api/post/", {
+            'activity': 'Gym',
+            'activity_name': 'Biceps i triceps',
+            'status': 'Vrhunski',
+            'location': 'Fit&Health Vracar',
+            'duration': '23:14:12',
+            'exercise': [{
+                'type': exercise_type[0].id,
+                'reps':[{
+                    'unit': units[0].id,
+                    'quantity': 35,
+                    'repetition': 12
+                    },
+                    {
+                    'unit': units[0].id,
+                    'quantity': 45,
+                    'repetition': 10
+                    },
+                    {
+                    'unit': units[0].id,
+                    'quantity': 55,
+                    'repetition': 8
+                    }]
+                },
+                {
+                'type': exercise_type[1].id,
+                'reps':[{
+                    'repetition': 20
+                    },
+                    {
+                    'repetition': 20
+                    },
+                    {
+                    'repetition': 20
+                    }]
+                }
+            ]
 
+        }, format='json')
+    print response
+    assert response.status_code == status.HTTP_201_CREATED
+    response = logged_client.post(
+        "/api/post/", {
+            'activity': 'Gym',
+            'activity_name': 'Biceps i triceps',
+            'status': 'Vrhunski',
+            'location': 'Fit&Health Vracar',
+            'duration': '23:14:12',
+            'type': activity_type[0].id,
+            'info': {
+                'quantity': 5
+            },
+            'exercise': [{
+                'type': exercise_type[0].id,
+                'reps':[{
+                    'unit': units[0].id,
+                    'quantity': 35,
+                    'repetition': 12
+                    }]
+                },
+                {
+                'type': exercise_type[1].id,
+                'reps':[{
+                    'repetition': 20
+                    }]
+                }
+            ]
+
+        }, format='json')
+    print response
+    assert response.status_code == status.HTTP_201_CREATED
