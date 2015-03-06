@@ -53,6 +53,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_swagger',
+    'corsheaders',
     'taggit',
 
     'imagestore',
@@ -64,8 +65,10 @@ INSTALLED_APPS = (
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'corsheaders.middleware.CorsPostCsrfMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -77,14 +80,6 @@ ROOT_URLCONF = 'athon.urls'
 WSGI_APPLICATION = 'athon.wsgi.application'
 
 ACCOUNT_ACTIVATION_DAYS = 7
-
-# Database
-# https://docs.djangoproject.com/en/1.7/ref/settings/#databases
-
-
-
-# Internationalization
-# https://docs.djangoproject.com/en/1.7/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
 
@@ -105,6 +100,13 @@ DATABASES['default']['ENGINE'] = 'django_postgrespool'
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
+CORS_ORIGIN_WHITELIST = (
+    'herokuapp.com',
+    'athon.divshot.io',
+)
+CORS_URL_REGEX = r'^/api/.*$'
+CORS_REPLACE_HTTPS_REFERER = True
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
@@ -123,11 +125,12 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
 
-# Simplified static file serving.
-# https://warehouse.python.org/project/whitenoise/
 STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
 REST_FRAMEWORK = {
+	'DEFAULT_AUTHENTICATION_CLASSES': (
+		'rest_framework.authentication.SessionAuthentication',
+	),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
@@ -143,11 +146,6 @@ REST_FRAMEWORK = {
     },
     'MAX_PAGINATE_BY': 10000,
 }
-
-#
-# SWAGGER_SETTINGS = {
-# "exclude_namespaces": ["swagger_excluded"],
-# }
 
 LOGGING = {
     'version': 1,
