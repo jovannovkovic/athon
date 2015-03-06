@@ -283,6 +283,7 @@ class Post(models.Model):
     hidden = models.BooleanField(default=False)
     type = models.ForeignKey(ActivityType, null=True, blank=True, default=None)
     info = models.ForeignKey(ActivityTypeInfo, null=True, blank=True, default=None)
+    exercise = models.ForeignKey(Exercise, null=True, blank=True)
 
 
 
