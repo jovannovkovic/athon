@@ -69,7 +69,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     """ Serializer for Profile entity which includes django's user entity.
 
     """
-    athlete_histories = AthleteHistorySerializer(many=True)
+    athlete_histories = AthleteHistorySerializer(many=True, required=False)
     gender = IntegerField(required=False)
 
     class Meta:
@@ -242,21 +242,32 @@ class ExerciseSerializer(serializers.ModelSerializer):
         model = models.Exercise
         fields = ('id', 'type', 'reps')
 
-    def save_object(self, obj, **kwargs):
-        post = self.context.get('post', None)
-        if post is not None:
-            obj.post = post
-        return super(ExerciseSerializer, self).save_object(obj, **kwargs)
+    # def save_object(self, obj, **kwargs):
+    #     post = self.context.get('post', None)
+    #     if post is not None:
+    #         obj.post = post
+    #     return super(ExerciseSerializer, self).save_object(obj, **kwargs)
+
+
+class PostUserSerializer(serializers.ModelSerializer):
+
+    profile_photo = serializers.ImageField(source='profile.profile_photo')
+
+    class Meta:
+        model = get_user_model()
+        fields = ('id', 'username', 'first_name', 'last_name', 'profile_photo')
 
 
 class PostSerializer(serializers.ModelSerializer):
 
     info = ActivityTypeInfoSerializer(required=False)
-    exercise = ExerciseSerializer(many=True, read_only=True)
+    # exercise = ExerciseSerializer(many=True, read_only=True)
+    exercise = ExerciseSerializer(many=True, required=False)
+    user = PostUserSerializer(read_only=True)
 
     class Meta:
         model = models.Post
-        exclude = ('hidden', 'user')
+        exclude = ('hidden',)
 
     def save_object(self, obj, **kwargs):
         user = self.context.get('user', None)

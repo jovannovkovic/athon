@@ -363,15 +363,14 @@ def test_user_update_image(logged_client):
     user_id = a_user.pk
     with open(path.join(path.dirname(__file__), "pixel.jpg")) as file_ptr:
         response = logged_client.put(
-            "/api/user/%s/" % user_id,
+            "/api/user/profile/%s/" % user_id,
             {
-                'profile': {
-                    'profile_photo': file_ptr,
-                    'hometown': 'Ub'
-                }
+                'profile_photo': file_ptr,
+                'hometown': 'Ub'
             }
         )
-    assert response.status_code == status.HTTP_200_OK
+    print response
+    assert response.status_code == status.HTTP_300_MULTIPLE_CHOICES
 
     a_user = get_user_model().objects.get(username=TEST_USERNAME).profile
     assert a_user.profile_photo.url.startswith(
@@ -569,7 +568,7 @@ def test_user_post(logged_client, another_user, exercise_type, activity_type):
             'activity_name': 'Biceps i triceps',
             'status': 'Vrhunski',
             'location': 'Fit&Health Vracar',
-            'duration': '23:14:12',
+            'duration': [23, 14, 12],
             'exercise': [{
                 'type': exercise_type[0].id,
                 'reps':[{
@@ -611,7 +610,7 @@ def test_user_post(logged_client, another_user, exercise_type, activity_type):
             'activity_name': 'Biceps i triceps',
             'status': 'Vrhunski',
             'location': 'Fit&Health Vracar',
-            'duration': '23:14:12',
+            'duration': [23, 14, 12],
             'type': activity_type[0].id,
             'info': {
                 'quantity': 5
@@ -633,5 +632,210 @@ def test_user_post(logged_client, another_user, exercise_type, activity_type):
             ]
 
         }, format='json')
-    print response
     assert response.status_code == status.HTTP_201_CREATED
+
+
+@pytest.mark.django_db
+def test_user_get(logged_client, another_user, user_mika, exercise_type, activity_type):
+    units = models.Unit.objects.all()
+    response = logged_client.post(
+        "/api/user/%s/follow/" % another_user.pk)
+    another_user_client = APIClient()
+    another_user_client.login(username=TEST_USERNAME_1, password=TEST_PASSWORD_1)
+    another_user_client.force_authenticate(user=another_user)
+
+    user_mika_client = APIClient()
+    user_mika_client.login(username=TEST_USERNAME_2, password=TEST_PASSWORD_2)
+    user_mika_client.force_authenticate(user=user_mika)
+
+    response = another_user_client.post(
+        "/api/post/", {
+            'activity': 'Gym',
+            'activity_name': 'Biceps i triceps',
+            'status': 'Vrhunski',
+            'location': 'Fit&Health Vracar',
+            'duration': [23, 14, 12],
+            'exercise': [{
+                'type': exercise_type[0].id,
+                'reps':[{
+                    'unit': units[0].id,
+                    'quantity': 35,
+                    'repetition': 12
+                    },
+                    {
+                    'unit': units[0].id,
+                    'quantity': 45,
+                    'repetition': 10
+                    },
+                    {
+                    'unit': units[0].id,
+                    'quantity': 55,
+                    'repetition': 8
+                    }]
+                },
+                {
+                'type': exercise_type[1].id,
+                'reps':[{
+                    'repetition': 20
+                    },
+                    {
+                    'repetition': 20
+                    },
+                    {
+                    'repetition': 20
+                    }]
+                }
+            ]
+
+        }, format='json')
+    assert response.status_code == status.HTTP_201_CREATED
+    response = user_mika_client.post(
+        "/api/post/", {
+            'activity': 'Gym',
+            'activity_name': 'Biceps i triceps',
+            'status': 'Vrhunski',
+            'location': 'Fit&Health Vracar',
+            'duration': [23, 14, 12],
+            'type': activity_type[0].id,
+            'info': {
+                'quantity': 5
+            },
+            'exercise': [{
+                'type': exercise_type[0].id,
+                'reps':[{
+                    'unit': units[0].id,
+                    'quantity': 35,
+                    'repetition': 12
+                    }]
+                },
+                {
+                'type': exercise_type[1].id,
+                'reps':[{
+                    'repetition': 20
+                    }]
+                }
+            ]
+
+        }, format='json')
+    assert response.status_code == status.HTTP_201_CREATED
+
+    response = logged_client.get(
+        "/api/post/")
+    assert len(response.data['results']) == 1
+    assert response.data['results'][0]['id'] == 1
+    assert response.status_code == status.HTTP_200_OK
+
+
+@pytest.mark.django_db
+def test_user_get_not_fallowing(logged_client):
+    response = logged_client.get(
+        "/api/post/")
+    print response
+    assert len(response.data['results']) == 0
+    assert response.data['count'] == 0
+    assert response.status_code == status.HTTP_200_OK
+
+
+@pytest.mark.django_db
+def test_user_delete(logged_client, another_user, user_mika, exercise_type, activity_type):
+    units = models.Unit.objects.all()
+    response = logged_client.post(
+        "/api/user/%s/follow/" % another_user.pk)
+    another_user_client = APIClient()
+    another_user_client.login(username=TEST_USERNAME_1, password=TEST_PASSWORD_1)
+    another_user_client.force_authenticate(user=another_user)
+
+    user_mika_client = APIClient()
+    user_mika_client.login(username=TEST_USERNAME_2, password=TEST_PASSWORD_2)
+    user_mika_client.force_authenticate(user=user_mika)
+
+    response = another_user_client.post(
+        "/api/post/", {
+            'activity': 'Gym',
+            'activity_name': 'Biceps i triceps',
+            'status': 'Vrhunski',
+            'location': 'Fit&Health Vracar',
+            'duration': [23, 14, 12],
+            'exercise': [{
+                'type': exercise_type[0].id,
+                'reps':[{
+                    'unit': units[0].id,
+                    'quantity': 35,
+                    'repetition': 12
+                    },
+                    {
+                    'unit': units[0].id,
+                    'quantity': 45,
+                    'repetition': 10
+                    },
+                    {
+                    'unit': units[0].id,
+                    'quantity': 55,
+                    'repetition': 8
+                    }]
+                },
+                {
+                'type': exercise_type[1].id,
+                'reps':[{
+                    'repetition': 20
+                    },
+                    {
+                    'repetition': 20
+                    },
+                    {
+                    'repetition': 20
+                    }]
+                }
+            ]
+
+        }, format='json')
+    assert response.status_code == status.HTTP_201_CREATED
+    post_id = response.data['id']
+    response = user_mika_client.post(
+        "/api/post/", {
+            'activity': 'Gym',
+            'activity_name': 'Biceps i triceps',
+            'status': 'Vrhunski',
+            'location': 'Fit&Health Vracar',
+            'duration': [23, 14, 12],
+            'type': activity_type[0].id,
+            'info': {
+                'quantity': 5
+            },
+            'exercise': [{
+                'type': exercise_type[0].id,
+                'reps':[{
+                    'unit': units[0].id,
+                    'quantity': 35,
+                    'repetition': 12
+                    }]
+                },
+                {
+                'type': exercise_type[1].id,
+                'reps':[{
+                    'repetition': 20
+                    }]
+                }
+            ]
+
+        }, format='json')
+    assert response.status_code == status.HTTP_201_CREATED
+
+    response = logged_client.get(
+        "/api/post/")
+    assert len(response.data['results']) == 1
+    assert response.data['results'][0]['id'] == 1
+    assert response.status_code == status.HTTP_200_OK
+
+    response = another_user_client.delete(
+        "/api/post/%s/" % post_id
+    )
+    assert response.status_code == status.HTTP_200_OK
+
+    response = logged_client.get(
+        "/api/post/")
+    assert len(response.data['results']) == 0
+    assert response.data['count'] == 0
+    assert response.status_code == status.HTTP_200_OK
+
+    assert models.Post.objects.count() == 1

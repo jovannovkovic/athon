@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import datetime, date, time
 from itertools import izip as zip, count, compress
 
 from athon import models, serializers, enums, permissions
@@ -57,6 +57,23 @@ class ProfileView(mixins.RetrieveModelMixin,
         """
         _UserManagementViews.pre_save(self, obj)
         mixins.UpdateModelMixin.pre_save(self, obj)
+
+
+class ProfileUserView(generics.UpdateAPIView, generics.GenericAPIView):
+
+    model = models.Profile
+    serializer_class = serializers.ProfileSerializer
+
+    def patch(self, request, *args, **kwargs):
+        if "birthday" in self.request.DATA['profile']:
+            b = self.request.DATA['profile']['birthday']
+            birthday = date(b[0], b[1], b[2])
+            self.request.DATA['profile']['birthday'] = birthday
+        serializer = self.serializer_class(data=self.request.DATA)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class AthleteHistoryView(generics.CreateAPIView):
@@ -283,23 +300,54 @@ class PostView(generics.ListCreateAPIView):
     model = models.Post
     serializer_class = serializers.PostSerializer
     permission_classes = (rest_permissions.IsAuthenticated,)
+    paginate_by = 20
 
     def post(self, request, *args, **kwargs):
         data = request.DATA
-        serializer = self.serializer_class(data=request.DATA,
+        if 'duration' in data:
+            d = data['duration']
+            duration = time(d[0], d[1], d[2])
+            data['duration'] = duration
+        serializer = self.serializer_class(data=data,
                         context={'user': self.request.user})
         if serializer.is_valid():
-            exercise_data = data.pop('exercise')
-            exer_serializer = serializers.ExerciseSerializer(many=True, data=exercise_data)
-            if exer_serializer.is_valid():
-                serializer.save()
-                post_id = serializer.data['id']
-                post = models.Post.objects.get(id=post_id)
-                for i in range(len(exercise_data)):
-                    exercise_serializer = serializers.ExerciseSerializer(data=exercise_data[i],
-                                context={'post': post})
-                    if exercise_serializer.is_valid():
-                        exercise_serializer.save()
-                serializer = serializers.PostSerializer(models.Post.objects.get(id=post_id))
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_queryset(self):
+        following_ids = self.request.user.profile.following.filter(
+                request_status=False).values_list('followed_user__user_id', flat=True)
+        return models.Post.objects.filter(user_id__in=following_ids)
+
+
+class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
+    model = models.Post
+    serializer_class = serializers.PostSerializer
+    permission_classes = (rest_permissions.IsAuthenticated,)
+
+    def delete(self, request, *args, **kwargs):
+        id = self.kwargs.get('id', None)
+        models.Post.objects.filter(id=id).update(hidden=True)
+        return Response(status=status.HTTP_200_OK)
+
+    def get_object(self, queryset=None):
+        post_id = self.kwargs.get('id', None)
+        try:
+            return self.model.objects.get(id=post_id)
+        except self.model.DoesNotExist:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, *args, **kwargs):
+        pass
+
+
+class UserPostView(generics.ListAPIView):
+    model = models.Post
+    serializer_class = serializers.PostSerializer
+    permission_classes = (rest_permissions.IsAuthenticated,)
+    paginate_by = 20
+
+    def get_queryset(self):
+        user_id = self.kwargs.get('id', None)
+        return models.Post.objects.filter(user_id=user_id)

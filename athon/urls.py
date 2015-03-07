@@ -20,6 +20,7 @@ router = routers.DefaultRouter()
 router.register(r'user', views.ProfileView)
 
 urlpatterns = patterns('',
+    url(r'^api/user/profile/(?P<pk>[0-9]+)/$', views.ProfileUserView.as_view()),
     url(r'^api/user/athlete_history/$', views.AthleteHistoryView.as_view()),
     url(r'^api/user/athlete_history/(?P<id>[0-9]+)/$', views.AthleteHistoryDetailView.as_view()),
     url(r'^api/user/register/$', account.RegistrationView.as_view()),
@@ -47,6 +48,8 @@ urlpatterns = patterns('',
     url(r'^api/post/activity_type/$', views.ActivityTypeView.as_view()),
     url(r'^api/post/exercise_type/$', views.ExerciseTypeView.as_view()),
     url(r'^api/post/$', views.PostView.as_view()),
+    url(r'^api/post/(?P<id>[0-9]+)/$', views.PostDetailView.as_view()),
+    url(r'^api/user/(?P<id>[0-9]+)/post/$', views.UserPostView.as_view()),
 )
 
 urlpatterns += patterns('',

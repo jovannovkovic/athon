@@ -13,6 +13,10 @@ TEST_EMAIL_1 = 'neki1@test.com'
 TEST_USERNAME_1 = "TESTING ERIC VELIKI"
 TEST_PASSWORD_1 = "paswordija 111"
 
+TEST_EMAIL_2 = 'neki2@test.com'
+TEST_USERNAME_2 = "MIKA"
+TEST_PASSWORD_2 = "paswordija 111"
+
 @pytest.fixture
 def user():
     user = User(username=TEST_USERNAME, email=TEST_EMAIL, is_active=False)
@@ -26,6 +30,15 @@ def user():
 def another_user():
     user = User(username=TEST_USERNAME_1, email=TEST_EMAIL_1)
     user.set_password(TEST_PASSWORD_1)
+    user.save()
+    models.Profile.create_empty(user)
+    return user
+
+
+@pytest.fixture
+def user_mika():
+    user = User(username=TEST_USERNAME_2, email=TEST_EMAIL_2)
+    user.set_password(TEST_PASSWORD_2)
     user.save()
     models.Profile.create_empty(user)
     return user

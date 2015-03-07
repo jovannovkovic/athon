@@ -258,7 +258,16 @@ class ActivityTypeInfo(models.Model):
     quantity = models.CharField(max_length=125, null=True, blank=True)
 
 
+class PostManager(models.Manager):
+
+    def get_queryset(self):
+        return super(PostManager, self).get_queryset().select_related(
+            'type', 'info', 'exercise').filter(hidden=False)
+
+
 class Post(models.Model):
+
+    objects = PostManager()
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='posts')
     activity = models.CharField(max_length=125, null=True, blank=True)
@@ -272,6 +281,9 @@ class Post(models.Model):
     hidden = models.BooleanField(default=False)
     type = models.ForeignKey(ActivityType, null=True, blank=True, default=None)
     info = models.ForeignKey(ActivityTypeInfo, null=True, blank=True, default=None)
+
+    class Meta:
+        ordering = ['-id']
 
 
 class Exercise(models.Model):
