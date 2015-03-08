@@ -262,7 +262,7 @@ class PostSerializer(serializers.ModelSerializer):
 
     info = ActivityTypeInfoSerializer(required=False)
     # exercise = ExerciseSerializer(many=True, read_only=True)
-    exercise = ExerciseSerializer(many=True, required=False)
+    exercises = ExerciseSerializer(many=True, required=False)
     user = PostUserSerializer(read_only=True)
 
     class Meta:

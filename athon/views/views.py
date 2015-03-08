@@ -304,10 +304,10 @@ class PostView(generics.ListCreateAPIView):
 
     def post(self, request, *args, **kwargs):
         data = request.DATA
-        if 'duration' in data:
-            d = data['duration']
+        if 'time' in data:
+            d = data['time']
             duration = time(d[0], d[1], d[2])
-            data['duration'] = duration
+            data['time'] = duration
         serializer = self.serializer_class(data=data,
                         context={'user': self.request.user})
         if serializer.is_valid():

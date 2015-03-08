@@ -262,7 +262,7 @@ class PostManager(models.Manager):
 
     def get_queryset(self):
         return super(PostManager, self).get_queryset().select_related(
-            'type', 'info', 'exercise').filter(hidden=False)
+            'type', 'info', 'exercises').filter(hidden=False)
 
 
 class Post(models.Model):
@@ -270,11 +270,11 @@ class Post(models.Model):
     objects = PostManager()
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='posts')
-    activity = models.CharField(max_length=125, null=True, blank=True)
+    title = models.CharField(max_length=125, null=True, blank=True)
     activity_name = models.CharField(max_length=225, null=True, blank=True)
     photo = models.ImageField(upload_to=upload_to,
                 null=True, blank=True)
-    duration = models.TimeField(null=True, blank=True)
+    time = models.TimeField(null=True, blank=True)
     status = models.CharField(max_length=300, null=True, blank=True)
     location = models.CharField(max_length=100, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, blank=True)
@@ -287,7 +287,7 @@ class Post(models.Model):
 
 
 class Exercise(models.Model):
-    post = models.ForeignKey(Post, null=True, blank=True, related_name='exercise')
+    post = models.ForeignKey(Post, null=True, blank=True, related_name='exercises')
     type = models.ForeignKey(ExerciseType)
 
 

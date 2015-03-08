@@ -31,7 +31,7 @@ def test_user_registration():
     assert response.status_code == status.HTTP_201_CREATED
     user = get_user_model().objects.get(username=USERNAME, email=EMAIL)
     assert user is not None
-    assert user.is_active == False
+    assert user.is_active == True
     assert user.profile is not None
     assert models.RegistrationProfile.objects.get(user=user).activation_key != models.RegistrationProfile.ACTIVATED
 
@@ -51,7 +51,7 @@ def test_user_login_before_activation():
     assert response.status_code == status.HTTP_201_CREATED
     user = get_user_model().objects.get(username=USERNAME, email=EMAIL)
     assert user is not None
-    assert user.is_active == False
+    assert user.is_active == True
     assert user.profile is not None
     assert models.RegistrationProfile.objects.get(user=user).activation_key != models.RegistrationProfile.ACTIVATED
 
@@ -154,7 +154,7 @@ def test_update_user(logged_client, another_user):
     assert response.status_code == status.HTTP_200_OK
     assert response.data['profile']['hometown'] == hometown
     first_name = 'another_user'
-    height = '123'
+    height = 123
     response = logged_client.patch(
         "/api/user/%s/" % a_user.pk,
         {
@@ -183,7 +183,7 @@ def test_update_user(logged_client, another_user):
     assert get_user_model().objects.get(username=TEST_USERNAME).check_password('joca') is True
 
     first_name = 'another_user'
-    height = '123'
+    height = 123
     response = logged_client.patch(
         "/api/user/%s/" % a_user.pk,
         {
@@ -205,7 +205,7 @@ def test_update_user(logged_client, another_user):
 @pytest.mark.django_db
 def test_user_create_athlete_histories(logged_client, sports):
     response = logged_client.post(
-        "/api/user/athlete_histories/",
+        "/api/user/athlete_history/",
             [
                 {
                     'sport': sports[0].id,
@@ -232,11 +232,12 @@ def test_user_create_athlete_histories(logged_client, sports):
                 }
             ]
         , format='json')
+    print response
     assert response.status_code == status.HTTP_201_CREATED
     assert len(response.data) == 2
 
     response = logged_client.post(
-        "/api/user/athlete_histories/",
+        "/api/user/athlete_history/",
             [
                 {
                     'sport': sports[1].id,
@@ -258,7 +259,7 @@ def test_user_create_athlete_histories(logged_client, sports):
 @pytest.mark.django_db
 def test_user_update_athlete_histories(logged_client, sports):
     logged_client.post(
-        "/api/user/athlete_histories/",
+        "/api/user/athlete_history/",
             [
                 {
                     'sport': sports[1].id,
@@ -285,7 +286,7 @@ def test_user_update_athlete_histories(logged_client, sports):
     a_user = get_user_model().objects.get(username=TEST_USERNAME).profile
     ah = a_user.athlete_histories.all()[0]
     response = logged_client.put(
-        "/api/user/athlete_histories/%s/" % ah.id,
+        "/api/user/athlete_history/%s/" % ah.id,
             {
                 'sport': sports[1].id,
             }
@@ -297,7 +298,7 @@ def test_user_update_athlete_histories(logged_client, sports):
     ach = ah.achievements.all()[0]
     title = 'TOP'
     response = logged_client.put(
-        "/api/user/athlete_histories/%s/" % ah.id,
+        "/api/user/athlete_history/%s/" % ah.id,
             {
                 'sport': sports[0].id,
                 'from_date': 2005,
@@ -319,7 +320,7 @@ def test_user_update_athlete_histories(logged_client, sports):
 @pytest.mark.django_db
 def test_user_delete_athlete_histories(logged_client, sports):
     response = logged_client.post(
-        "/api/user/athlete_histories/",
+        "/api/user/athlete_history/",
             [
                 {
                     'sport': sports[0].id,
@@ -348,7 +349,7 @@ def test_user_delete_athlete_histories(logged_client, sports):
     assert ah_set.count() == 2
     ah_first_id = response.data[0]['id']
     response = logged_client.delete(
-        "/api/user/athlete_histories/%s/" % response.data[1]['id'])
+        "/api/user/athlete_history/%s/" % response.data[1]['id'])
     assert response.status_code == status.HTTP_200_OK
     ah_set = a_user.athlete_histories.all()
     assert ah_set[0].id == ah_first_id
@@ -370,7 +371,7 @@ def test_user_update_image(logged_client):
             }
         )
     print response
-    assert response.status_code == status.HTTP_300_MULTIPLE_CHOICES
+    assert response.status_code == status.HTTP_200_OK
 
     a_user = get_user_model().objects.get(username=TEST_USERNAME).profile
     assert a_user.profile_photo.url.startswith(
@@ -564,11 +565,11 @@ def test_user_post(logged_client, another_user, exercise_type, activity_type):
     user =  get_user_model().objects.get(username=TEST_USERNAME)
     response = logged_client.post(
         "/api/post/", {
-            'activity': 'Gym',
+            'title': 'Gym',
             'activity_name': 'Biceps i triceps',
             'status': 'Vrhunski',
             'location': 'Fit&Health Vracar',
-            'duration': [23, 14, 12],
+            'time': [23, 14, 12],
             'exercise': [{
                 'type': exercise_type[0].id,
                 'reps':[{
@@ -606,11 +607,11 @@ def test_user_post(logged_client, another_user, exercise_type, activity_type):
     assert response.status_code == status.HTTP_201_CREATED
     response = logged_client.post(
         "/api/post/", {
-            'activity': 'Gym',
+            'title': 'Gym',
             'activity_name': 'Biceps i triceps',
             'status': 'Vrhunski',
             'location': 'Fit&Health Vracar',
-            'duration': [23, 14, 12],
+            'time': [23, 14, 12],
             'type': activity_type[0].id,
             'info': {
                 'quantity': 5
@@ -650,11 +651,11 @@ def test_user_get(logged_client, another_user, user_mika, exercise_type, activit
 
     response = another_user_client.post(
         "/api/post/", {
-            'activity': 'Gym',
+            'title': 'Gym',
             'activity_name': 'Biceps i triceps',
             'status': 'Vrhunski',
             'location': 'Fit&Health Vracar',
-            'duration': [23, 14, 12],
+            'time': [23, 14, 12],
             'exercise': [{
                 'type': exercise_type[0].id,
                 'reps':[{
@@ -691,11 +692,11 @@ def test_user_get(logged_client, another_user, user_mika, exercise_type, activit
     assert response.status_code == status.HTTP_201_CREATED
     response = user_mika_client.post(
         "/api/post/", {
-            'activity': 'Gym',
+            'title': 'Gym',
             'activity_name': 'Biceps i triceps',
             'status': 'Vrhunski',
             'location': 'Fit&Health Vracar',
-            'duration': [23, 14, 12],
+            'time': [23, 14, 12],
             'type': activity_type[0].id,
             'info': {
                 'quantity': 5
@@ -722,7 +723,7 @@ def test_user_get(logged_client, another_user, user_mika, exercise_type, activit
     response = logged_client.get(
         "/api/post/")
     assert len(response.data['results']) == 1
-    assert response.data['results'][0]['id'] == 1
+    assert response.data['count'] == 1
     assert response.status_code == status.HTTP_200_OK
 
 
@@ -751,11 +752,11 @@ def test_user_delete(logged_client, another_user, user_mika, exercise_type, acti
 
     response = another_user_client.post(
         "/api/post/", {
-            'activity': 'Gym',
+            'title': 'Gym',
             'activity_name': 'Biceps i triceps',
             'status': 'Vrhunski',
             'location': 'Fit&Health Vracar',
-            'duration': [23, 14, 12],
+            'time': [23, 14, 12],
             'exercise': [{
                 'type': exercise_type[0].id,
                 'reps':[{
@@ -793,11 +794,11 @@ def test_user_delete(logged_client, another_user, user_mika, exercise_type, acti
     post_id = response.data['id']
     response = user_mika_client.post(
         "/api/post/", {
-            'activity': 'Gym',
+            'title': 'Gym',
             'activity_name': 'Biceps i triceps',
             'status': 'Vrhunski',
             'location': 'Fit&Health Vracar',
-            'duration': [23, 14, 12],
+            'time': [23, 14, 12],
             'type': activity_type[0].id,
             'info': {
                 'quantity': 5
@@ -824,7 +825,7 @@ def test_user_delete(logged_client, another_user, user_mika, exercise_type, acti
     response = logged_client.get(
         "/api/post/")
     assert len(response.data['results']) == 1
-    assert response.data['results'][0]['id'] == 1
+    assert response.data['count'] == 1
     assert response.status_code == status.HTTP_200_OK
 
     response = another_user_client.delete(
