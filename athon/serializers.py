@@ -79,6 +79,10 @@ class ProfileSerializer(serializers.ModelSerializer):
         )
         exclude = ('follow_users', 'user', 'is_active')
 
+    def to_native(self, obj):
+        obj.profile_photo = obj.profile_photo.url
+        return super(ProfileSerializer, self).to_native(obj)
+
 
 class UserSerializer(serializers.ModelSerializer):
     """ For some reason, we cannot use UserSerializer class directly bellow.

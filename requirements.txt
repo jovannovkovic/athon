@@ -12,6 +12,7 @@ django-rest-swagger==0.2.8
 django-tagging==0.3.4
 django-taggit==0.12.1
 django-uuid-upload-path==1.0.0
+django-s3-folder-storage==0.2
 djangorestframework==2.3.14
 drf-toolbox==0.1.7
 gunicorn==19.2.1

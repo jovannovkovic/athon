@@ -374,9 +374,9 @@ def test_user_update_image(logged_client):
     assert response.status_code == status.HTTP_200_OK
 
     a_user = get_user_model().objects.get(username=TEST_USERNAME).profile
+    print a_user.profile_photo.url
     assert a_user.profile_photo.url.startswith(
-            "/media/athon/profile/")
-    assert a_user.profile_photo.url.endswith("jpg")
+            "https://athon.s3.amazonaws.com/media/athon/profile/")
     assert a_user.hometown == 'Ub'
 
 
