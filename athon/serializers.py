@@ -218,13 +218,21 @@ class UnitSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'hint')
 
 
+class TagsSerializer(serializers.Field):
+
+    def to_native(self, obj):
+        if type(obj) is not list:
+            return [tag.name for tag in obj.all()]
+        return obj
+
+
 class ExerciseTypeSerializer(serializers.ModelSerializer):
 
-    unit = UnitSerializer()
+    synonyms = TagsSerializer()
 
     class Meta:
         model = models.ExerciseType
-        fields = ('id', 'name', 'unit', 'quantity', 'repetition')
+        fields = ('id', 'name', 'unit', 'quantity', 'repetition', 'synonyms')
 
 
 class RepetitionSerializer(serializers.ModelSerializer):

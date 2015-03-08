@@ -21,6 +21,8 @@ from django.utils.translation import gettext_lazy as _
 from uuid_upload_path.storage import upload_to
 from enums import Gender, FollowStatus, Unit as EnumUnit
 
+from taggit.managers import TaggableManager
+
 SHA1_RE = re.compile('^[a-f0-9]{40}$')
 
 
@@ -240,7 +242,7 @@ class ExerciseType(models.Model):
     objects = ExerciseTypeManager()
 
     name = models.CharField(max_length=125, null=True, blank=True)
-    # synonims = []
+    synonyms = TaggableManager()
     unit = models.ForeignKey(Unit, null=True, blank=True)
     quantity = models.BooleanField(default=False)
     repetition = models.BooleanField(default=False)
