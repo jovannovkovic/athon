@@ -65,12 +65,24 @@ class AthleteHistorySerializer(serializers.ModelSerializer):
         super(AthleteHistorySerializer, self).save_object(obj, **kwargs)
 
 
+class Photo(serializers.ImageField):
+
+    def to_native(self, value):
+        print value
+        try:
+            return value.url
+        except ValueError:
+            pass
+        return super(Photo, self).to_native(value)
+
+
 class ProfileSerializer(serializers.ModelSerializer):
     """ Serializer for Profile entity which includes django's user entity.
 
     """
     athlete_histories = AthleteHistorySerializer(many=True, required=False)
     gender = IntegerField(required=False)
+    profile_photo = Photo(required=False)
 
     class Meta:
         model = models.Profile
@@ -79,9 +91,13 @@ class ProfileSerializer(serializers.ModelSerializer):
         )
         exclude = ('follow_users', 'user', 'is_active')
 
-    def to_native(self, obj):
-        obj.profile_photo = obj.profile_photo.url
-        return super(ProfileSerializer, self).to_native(obj)
+    # def to_native(self, obj):
+    #     print "b"*60
+    #     print obj.profile_photo
+    #     if obj.profile_photo is not None or obj.profile_photo is not "":
+    #         print "a"*60
+    #         obj.profile_photo = obj.profile_photo.url
+    #     return super(ProfileSerializer, self).to_native(obj)
 
 
 class UserSerializer(serializers.ModelSerializer):
