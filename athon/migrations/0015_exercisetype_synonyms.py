@@ -8,7 +8,7 @@ import taggit.managers
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('taggit', '0002_auto_20150222_1820'),
+        ('taggit', '0001_initial'),
         ('athon', '0014_auto_20150308_1214'),
     ]
 
