@@ -40,6 +40,12 @@ TEMPLATE_DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 
+IS_PRODUCTION_ENV = os.getenv('env_athon') == 'production'
+if IS_PRODUCTION_ENV:
+    DEBUG = False
+    TEMPLATE_DEBUG = False
+
+
 # Application definition
 
 INSTALLED_APPS = (
@@ -112,28 +118,30 @@ CORS_REPLACE_HTTPS_REFERER = True
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
 DEFAULT_MEDIA_PATH = "media"
+DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+MEDIA_ROOT = os.path.join(BASE_DIR, DEFAULT_MEDIA_PATH)
+MEDIA_URL = '/%s/' % DEFAULT_MEDIA_PATH
 
-# DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
-DEFAULT_FILE_STORAGE = 's3_folder_storage.s3.DefaultStorage'
-STATICFILES_STORAGE = 's3_folder_storage.s3.StaticStorage'
-STATIC_S3_PATH = "static"
-AWS_ACCESS_KEY_ID = 'AKIAJC3GI2DDWMNEWUMQ'
-AWS_SECRET_ACCESS_KEY = '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'
-AWS_STORAGE_BUCKET_NAME = 'athon'
-AWS_S3_DOMAIN = '//s3.amazonaws.com/%s/media/'
-MEDIA_URL = '//s3.amazonaws.com/%s/media/' % AWS_STORAGE_BUCKET_NAME
-MEDIA_ROOT = '/%s/' % DEFAULT_MEDIA_PATH
-MEDIA_URL = 'http://%s/%s/' % (AWS_S3_DOMAIN, DEFAULT_MEDIA_PATH)
-DEFAULT_S3_PATH = MEDIA_ROOT
-# DEFAULT_MEDIA_PATH = "media"
-# MEDIA_ROOT = os.path.join(BASE_DIR, DEFAULT_MEDIA_PATH)
-# MEDIA_URL = '/%s/' % DEFAULT_MEDIA_PATH
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_FOLDER = "static"
 # STATIC_ROOT = os.path.join(BASE_DIR, STATIC_FOLDER)
 STATIC_ROOT = 'staticfiles'
 STATIC_URL = '/%s/' % STATIC_FOLDER
+
+# DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+if IS_PRODUCTION_ENV:
+    DEFAULT_FILE_STORAGE = 's3_folder_storage.s3.DefaultStorage'
+    STATICFILES_STORAGE = 's3_folder_storage.s3.StaticStorage'
+    STATIC_S3_PATH = "static"
+    AWS_ACCESS_KEY_ID = os.environ.get("ATHON_AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.environ.get("ATHON_AWS_SECRET_ACCESS_KEY")
+    AWS_STORAGE_BUCKET_NAME = os.environ.get(
+            "ATHON_AWS_STORAGE_BUCKET_NAME")
+    AWS_S3_DOMAIN = '//s3.amazonaws.com/%s/media/'
+    MEDIA_URL = '//s3.amazonaws.com/%s/media/' % AWS_STORAGE_BUCKET_NAME
+    MEDIA_ROOT = '/%s/' % DEFAULT_MEDIA_PATH
+    MEDIA_URL = 'http://%s/%s/' % (AWS_S3_DOMAIN, DEFAULT_MEDIA_PATH)
+    DEFAULT_S3_PATH = MEDIA_ROOT
+
 
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),

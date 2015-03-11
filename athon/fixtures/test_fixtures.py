@@ -65,9 +65,9 @@ def sports():
 
 @pytest.fixture
 def units():
-    unit1 = models.Unit.objects.create(name='Kilogram', hint='kg')
-    unit2 = models.Unit.objects.create(name='Metar', hint='m')
-    unit3 = models.Unit.objects.create(name='Kilometar', hint='km')
+    unit1 = models.Unit.objects.create(name='Kilogram', metric='kg', imperial="lb")
+    unit2 = models.Unit.objects.create(name='Metar', metric='m', imperial="ya")
+    unit3 = models.Unit.objects.create(name='Kilometar', metric='km', imperial="mi")
     return [unit1, unit2, unit3]
 
 
@@ -78,9 +78,3 @@ def exercise_type(units):
     ex3 = models.ExerciseType.objects.create(name='Cycling', unit=units[2], quantity=True)
     return [ex1, ex2, ex3]
 
-
-@pytest.fixture
-def activity_type():
-    at1 = models.ActivityType.objects.create(name='Rounds', hint='Create training with rounds')
-    at2 = models.ActivityType.objects.create(name='Interval training', hint='Create interval training')
-    return [at1, at2]

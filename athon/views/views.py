@@ -281,13 +281,6 @@ class UnitView(generics.ListAPIView):
         return models.Unit.objects.all()
 
 
-class ActivityTypeView(generics.ListAPIView):
-    model = models.ActivityType
-
-    def get_queryset(self):
-        return models.ActivityType.objects.all()
-
-
 class ExerciseTypeView(generics.ListAPIView):
     model = models.ExerciseType
     serializer_class = serializers.ExerciseTypeSerializer
@@ -304,10 +297,6 @@ class PostView(generics.ListCreateAPIView):
 
     def post(self, request, *args, **kwargs):
         data = request.DATA
-        if 'time' in data:
-            d = data['time']
-            duration = time(d[0], d[1], d[2])
-            data['time'] = duration
         serializer = self.serializer_class(data=data,
                         context={'user': self.request.user})
         if serializer.is_valid():

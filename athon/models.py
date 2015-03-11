@@ -21,6 +21,7 @@ from django.utils.translation import gettext_lazy as _
 from uuid_upload_path.storage import upload_to
 from enums import Gender, FollowStatus, Unit as EnumUnit
 
+from djorm_pgarray.fields import IntegerArrayField
 from taggit.managers import TaggableManager
 
 SHA1_RE = re.compile('^[a-f0-9]{40}$')
@@ -228,9 +229,11 @@ class Achievement(models.Model):
 
 class Unit(models.Model):
     name = models.CharField(max_length=125, null=True, blank=True,
-                verbose_name='Npr. Kilogrami')
-    hint = models.CharField(max_length=5, null=True, blank=True,
-                verbose_name='Npr. kg')
+                verbose_name='Npr. Kilometri')
+    metric = models.CharField(max_length=10, null=True, blank=True,
+                verbose_name='Npr. km')
+    imperial = models.CharField(max_length=10, null=True, blank=True,
+                verbose_name='Npr. mi')
 
     def __unicode__(self):
         return "Jedinica %s" % self.name
@@ -253,23 +256,20 @@ class ExerciseType(models.Model):
     def __unicode__(self):
         return "Vezba %s" % self.name
 
-class ActivityType(models.Model):
-    name = models.CharField(max_length=125, null=True, blank=True,
-            verbose_name='Npr. Rounds')
-    hint = models.CharField(max_length=125, null=True, blank=True,
-            verbose_name='Npr. Create training with rounds')
-
-
-class ActivityTypeInfo(models.Model):
-    description = models.CharField(max_length=125, null=True, blank=True)
-    quantity = models.CharField(max_length=125, null=True, blank=True)
+class ActivityDetails(models.Model):
+    rounds = models.CharField(max_length=125, null=True, blank=True)
+    series = models.CharField(max_length=125, null=True, blank=True)
+    interval = models.CharField(max_length=125, null=True, blank=True)
+    for_time = models.CharField(max_length=125, null=True, blank=True)
+    pace = models.CharField(max_length=125, null=True, blank=True)
+    amrap = IntegerArrayField()
 
 
 class PostManager(models.Manager):
 
     def get_queryset(self):
         return super(PostManager, self).get_queryset().select_related(
-            'type', 'info', 'exercises').filter(hidden=False)
+            'activity_details', 'exercises').filter(hidden=False)
 
 
 class Post(models.Model):
@@ -281,13 +281,12 @@ class Post(models.Model):
     activity_name = models.CharField(max_length=225, null=True, blank=True)
     photo = models.ImageField(upload_to=upload_to,
                 null=True, blank=True)
-    time = models.TimeField(null=True, blank=True)
+    time = models.PositiveIntegerField(default=0)
     status = models.CharField(max_length=300, null=True, blank=True)
     location = models.CharField(max_length=100, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, blank=True)
     hidden = models.BooleanField(default=False)
-    type = models.ForeignKey(ActivityType, null=True, blank=True, default=None)
-    info = models.ForeignKey(ActivityTypeInfo, null=True, blank=True, default=None)
+    activity_details = models.ForeignKey(ActivityDetails, null=True, blank=True, default=None)
 
     class Meta:
         ordering = ['-id']

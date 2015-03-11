@@ -19,6 +19,7 @@ django-tagging==0.3.4
 django-taggit==0.12.3
 django-uuid-upload-path==1.0.0
 djangorestframework==2.3.14
+djorm-pgarray==1.2
 drf-toolbox==0.1.7
 gunicorn==19.2.1
 imagestore==2.9.1
