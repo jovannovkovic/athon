@@ -71,7 +71,7 @@ class FollowUsers(models.Model):
         return super(FollowUsers, self).save(*args, **kwargs)
 
     def __unicode__(self):
-        return "fallower %s - fallowed %s" % (self.follower, self.followed_user)
+        return "follower %s - followed %s" % (self.follower, self.followed_user)
 
 
 class ProfileManager(models.Manager):
@@ -194,7 +194,7 @@ class Profile(models.Model):
     is_active = models.BooleanField(default=False)
 
     def __unicode__(self):
-        return "%s" % self.user
+        return "%s profile" % self.user
 
     @classmethod
     def create_empty(cls, user):
@@ -204,6 +204,8 @@ class Profile(models.Model):
 class Sport(models.Model):
     name = models.CharField(max_length=50)
 
+    def __unicode__(self):
+        return "%s" % self.name
 
 class AthleteHistory(models.Model):
     """ User sport history and achievements.
@@ -230,6 +232,8 @@ class Unit(models.Model):
     hint = models.CharField(max_length=5, null=True, blank=True,
                 verbose_name='Npr. kg')
 
+    def __unicode__(self):
+        return "Jedinica %s" % self.name
 
 class ExerciseTypeManager(models.Manager):
 
@@ -246,7 +250,8 @@ class ExerciseType(models.Model):
     unit = models.ForeignKey(Unit, null=True, blank=True)
     quantity = models.BooleanField(default=False)
     repetition = models.BooleanField(default=False)
-
+    def __unicode__(self):
+        return "Vezba %s" % self.name
 
 class ActivityType(models.Model):
     name = models.CharField(max_length=125, null=True, blank=True,
@@ -287,6 +292,8 @@ class Post(models.Model):
     class Meta:
         ordering = ['-id']
 
+    def __unicode__(self):
+        return "%s - %s - %s" % (self.user, self.title, self.created_at)
 
 class Exercise(models.Model):
     post = models.ForeignKey(Post, null=True, blank=True, related_name='exercises')
@@ -298,10 +305,6 @@ class Repetition(models.Model):
     unit = models.ForeignKey(Unit, null=True, blank=True)
     quantity = models.PositiveSmallIntegerField(default=0, null=True, blank=True)
     repetition = models.PositiveSmallIntegerField(default=0, null=True, blank=True)
-
-
-
-
 
 
 
