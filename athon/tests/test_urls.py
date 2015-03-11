@@ -19,7 +19,6 @@ EMAIL = "jovan_novko@yahoo.com"
 @pytest.mark.django_db
 def test_user_registration():
     """ Testing the registration proces. """
-
     api_client = APIClient()  # not logged in clients should be able to register
     response = api_client.post(
         "/api/user/register/",
@@ -93,7 +92,6 @@ def test_user_activate():
 @pytest.mark.django_db
 def test_user_login(api_client, user):
     """ Testing login proces. """
-
     response = api_client.post(
         "/api/user/login/",
         {
@@ -560,16 +558,24 @@ def test_email_exist(api_client, user):
 
 
 @pytest.mark.django_db
-def test_user_post(logged_client, another_user, exercise_type, activity_type):
+def test_user_post(logged_client, another_user, exercise_type):
     units = models.Unit.objects.all()
     user =  get_user_model().objects.get(username=TEST_USERNAME)
+    logged_client = APIClient()
+    logged_client.login(username=TEST_USERNAME, password=TEST_PASSWORD)
+    logged_client.force_authenticate(user=user)
     response = logged_client.post(
         "/api/post/", {
             'title': 'Gym',
             'activity_name': 'Biceps i triceps',
             'status': 'Vrhunski',
             'location': 'Fit&Health Vracar',
-            'time': [23, 14, 12],
+            'time': 2153,
+            'activity_details': {
+                'rounds': '3-5-5',
+                'interval': '7 minuta',
+                'amrap': [1, 2]
+            },
             'exercise': [{
                 'type': exercise_type[0].id,
                 'reps':[{
@@ -611,11 +617,7 @@ def test_user_post(logged_client, another_user, exercise_type, activity_type):
             'activity_name': 'Biceps i triceps',
             'status': 'Vrhunski',
             'location': 'Fit&Health Vracar',
-            'time': [23, 14, 12],
-            'type': activity_type[0].id,
-            'info': {
-                'quantity': 5
-            },
+            'time': 2153,
             'exercise': [{
                 'type': exercise_type[0].id,
                 'reps':[{
@@ -637,7 +639,7 @@ def test_user_post(logged_client, another_user, exercise_type, activity_type):
 
 
 @pytest.mark.django_db
-def test_user_get(logged_client, another_user, user_mika, exercise_type, activity_type):
+def test_user_get(logged_client, another_user, user_mika, exercise_type):
     units = models.Unit.objects.all()
     response = logged_client.post(
         "/api/user/%s/follow/" % another_user.pk)
@@ -655,7 +657,7 @@ def test_user_get(logged_client, another_user, user_mika, exercise_type, activit
             'activity_name': 'Biceps i triceps',
             'status': 'Vrhunski',
             'location': 'Fit&Health Vracar',
-            'time': [23, 14, 12],
+            'time': 2153,
             'exercise': [{
                 'type': exercise_type[0].id,
                 'reps':[{
@@ -696,11 +698,7 @@ def test_user_get(logged_client, another_user, user_mika, exercise_type, activit
             'activity_name': 'Biceps i triceps',
             'status': 'Vrhunski',
             'location': 'Fit&Health Vracar',
-            'time': [23, 14, 12],
-            'type': activity_type[0].id,
-            'info': {
-                'quantity': 5
-            },
+            'time': 2153,
             'exercise': [{
                 'type': exercise_type[0].id,
                 'reps':[{
@@ -738,7 +736,7 @@ def test_user_get_not_fallowing(logged_client):
 
 
 @pytest.mark.django_db
-def test_user_delete(logged_client, another_user, user_mika, exercise_type, activity_type):
+def test_user_delete(logged_client, another_user, user_mika, exercise_type):
     units = models.Unit.objects.all()
     response = logged_client.post(
         "/api/user/%s/follow/" % another_user.pk)
@@ -756,7 +754,7 @@ def test_user_delete(logged_client, another_user, user_mika, exercise_type, acti
             'activity_name': 'Biceps i triceps',
             'status': 'Vrhunski',
             'location': 'Fit&Health Vracar',
-            'time': [23, 14, 12],
+            'time': 2153,
             'exercise': [{
                 'type': exercise_type[0].id,
                 'reps':[{
@@ -798,11 +796,7 @@ def test_user_delete(logged_client, another_user, user_mika, exercise_type, acti
             'activity_name': 'Biceps i triceps',
             'status': 'Vrhunski',
             'location': 'Fit&Health Vracar',
-            'time': [23, 14, 12],
-            'type': activity_type[0].id,
-            'info': {
-                'quantity': 5
-            },
+            'time': 2153,
             'exercise': [{
                 'type': exercise_type[0].id,
                 'reps':[{

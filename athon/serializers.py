@@ -68,7 +68,6 @@ class AthleteHistorySerializer(serializers.ModelSerializer):
 class Photo(serializers.ImageField):
 
     def to_native(self, value):
-        print value
         try:
             return value.url
         except ValueError:
@@ -217,25 +216,17 @@ class SportSerializer(serializers.ModelSerializer):
         fields = ('id', 'name')
 
 
-class ActivityTypeSerializer(serializers.ModelSerializer):
+class ActivityDetailsSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = models.ActivityType
-        fields = ('id', 'name', 'hint')
-
-
-class ActivityTypeInfoSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = models.ActivityTypeInfo
-        fields = ('id', 'description', 'quantity')
+        model = models.ActivityDetails
 
 
 class UnitSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Unit
-        fields = ('id', 'name', 'hint')
+        fields = ('id', 'name', 'metric', 'imperial')
 
 
 class TagsSerializer(serializers.Field):
@@ -288,10 +279,11 @@ class PostUserSerializer(serializers.ModelSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
 
-    info = ActivityTypeInfoSerializer(required=False)
+    activity_details = ActivityDetailsSerializer(required=False)
     # exercise = ExerciseSerializer(many=True, read_only=True)
     exercises = ExerciseSerializer(many=True, required=False)
-    user = PostUserSerializer(read_only=True)
+    user = UserSerializer(read_only=True)
+    photo = Photo(required=False)
 
     class Meta:
         model = models.Post
