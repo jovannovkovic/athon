@@ -379,6 +379,16 @@ def test_user_update_image(logged_client):
 
 
 @pytest.mark.django_db
+def test_search_user(logged_client, another_user, user_mika):
+    search_term = 'TESTING'
+    response = logged_client.get(
+        "/api/user/search_for_user/", {'search_term': search_term})
+    print response
+    assert response.data['count'] == 2
+    assert response.status_code == status.HTTP_200_OK
+
+
+@pytest.mark.django_db
 def test_follow_user(logged_client, another_user):
     a_user = get_user_model().objects.get(username=TEST_USERNAME).profile
     response = logged_client.post(

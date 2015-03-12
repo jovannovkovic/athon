@@ -1,16 +1,18 @@
-from datetime import datetime, date, time
-from itertools import izip as zip, count, compress
+from datetime import date
+from itertools import izip as zip, count
 
-from athon import models, serializers, enums, permissions
+from athon import models, serializers, permissions
+from athon.filters import UserFilter
 
 from django.views.generic.base import TemplateView
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 
-from rest_framework import viewsets, mixins, \
+from rest_framework import viewsets, mixins, filters,\
         generics, views, permissions as rest_permissions
 from rest_framework import status
 from rest_framework.response import Response
+
 
 
 class IndexView(TemplateView):
@@ -74,6 +76,20 @@ class ProfileUserView(generics.UpdateAPIView, generics.GenericAPIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserSearchView(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """ API endpoint that allows users to be viewed.
+    Also, you can search through wineries by `username` and/or
+    `first_name` fields/parameters in HTTP request.
+
+    """
+    permission_classes = (rest_permissions.AllowAny,)
+    model = get_user_model()
+    serializer_class = serializers.UserSerializer
+    paginate_by = 20
+    filter_backends = (filters.DjangoFilterBackend, )
+    filter_class = UserFilter
 
 
 class AthleteHistoryView(generics.CreateAPIView):

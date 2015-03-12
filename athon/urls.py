@@ -16,7 +16,7 @@ def if_debug(*args, **kwargs):
 # registered before the parent one (i.e. `user/photos` must be
 # before `user`), or else you'll get that method is not allowed on request.
 router = routers.DefaultRouter()
-# router.register(r'user/register', views.UserRegister)
+router.register(r'user/search_for_user', views.UserSearchView)
 router.register(r'user', views.ProfileView)
 
 urlpatterns = patterns('',
