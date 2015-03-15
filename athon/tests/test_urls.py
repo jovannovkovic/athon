@@ -844,3 +844,196 @@ def test_user_delete(logged_client, another_user, user_mika, exercise_type):
     assert response.status_code == status.HTTP_200_OK
 
     assert models.Post.objects.count() == 1
+
+@pytest.mark.django_db
+def test_user_post_like(logged_client, another_user, exercise_type):
+    units = models.Unit.objects.all()
+    user = get_user_model().objects.get(username=TEST_USERNAME)
+    response = logged_client.post(
+        "/api/post/", {
+            'title': 'Gym',
+            'activity_name': 'Biceps i triceps',
+            'status': 'Vrhunski',
+            'location': 'Fit&Health Vracar',
+            'time': 2153,
+            'activity_details': {
+                'rounds': '3-5-5',
+                'interval': '7 minuta',
+                'amrap': [1, 2]
+            },
+            'exercise': [{
+                'type': exercise_type[0].id,
+                'reps':[{
+                    'unit': units[0].id,
+                    'quantity': 35,
+                    'repetition': 12
+                    },
+                    {
+                    'unit': units[0].id,
+                    'quantity': 45,
+                    'repetition': 10
+                    },
+                    {
+                    'unit': units[0].id,
+                    'quantity': 55,
+                    'repetition': 8
+                    }]
+                },
+                {
+                'type': exercise_type[1].id,
+                'reps':[{
+                    'repetition': 20
+                    },
+                    {
+                    'repetition': 20
+                    },
+                    {
+                    'repetition': 20
+                    }]
+                }
+            ]
+
+        }, format='json')
+    print response
+    post_id = response.data['id']
+    assert response.status_code == status.HTTP_201_CREATED
+    response = logged_client.post(
+        "/api/post/", {
+            'title': 'Gym',
+            'activity_name': 'Biceps i triceps',
+            'status': 'Vrhunski',
+            'location': 'Fit&Health Vracar',
+            'time': 2153,
+            'exercise': [{
+                'type': exercise_type[0].id,
+                'reps':[{
+                    'unit': units[0].id,
+                    'quantity': 35,
+                    'repetition': 12
+                    }]
+                },
+                {
+                'type': exercise_type[1].id,
+                'reps':[{
+                    'repetition': 20
+                    }]
+                }
+            ]
+
+        }, format='json')
+    assert response.status_code == status.HTTP_201_CREATED
+
+    response = logged_client.post(
+        "/api/post/%s/like/" % post_id)
+    post = models.Post.objects.get(id=post_id)
+    assert post.like_number == 1
+    assert response.status_code == status.HTTP_200_OK
+
+    response = logged_client.get(
+        "/api/post/%s/like/" % post_id)
+    assert response.status_code == status.HTTP_200_OK
+
+    response = logged_client.delete(
+        "/api/post/%s/like/" % post_id)
+    post = models.Post.objects.get(id=post_id)
+    assert post.like_number == 0
+    assert response.status_code == status.HTTP_200_OK
+
+
+@pytest.mark.django_db
+def test_user_post_comment(logged_client, another_user, exercise_type):
+    units = models.Unit.objects.all()
+    response = logged_client.post(
+        "/api/post/", {
+            'title': 'Gym',
+            'activity_name': 'Biceps i triceps',
+            'status': 'Vrhunski',
+            'location': 'Fit&Health Vracar',
+            'time': 2153,
+            'activity_details': {
+                'rounds': '3-5-5',
+                'interval': '7 minuta',
+                'amrap': [1, 2]
+            },
+            'exercise': [{
+                'type': exercise_type[0].id,
+                'reps':[{
+                    'unit': units[0].id,
+                    'quantity': 35,
+                    'repetition': 12
+                    },
+                    {
+                    'unit': units[0].id,
+                    'quantity': 45,
+                    'repetition': 10
+                    },
+                    {
+                    'unit': units[0].id,
+                    'quantity': 55,
+                    'repetition': 8
+                    }]
+                },
+                {
+                'type': exercise_type[1].id,
+                'reps':[{
+                    'repetition': 20
+                    },
+                    {
+                    'repetition': 20
+                    },
+                    {
+                    'repetition': 20
+                    }]
+                }
+            ]
+
+        }, format='json')
+    post_id = response.data['id']
+    assert response.status_code == status.HTTP_201_CREATED
+    response = logged_client.post(
+        "/api/post/", {
+            'title': 'Gym',
+            'activity_name': 'Biceps i triceps',
+            'status': 'Vrhunski',
+            'location': 'Fit&Health Vracar',
+            'time': 2153,
+            'exercise': [{
+                'type': exercise_type[0].id,
+                'reps':[{
+                    'unit': units[0].id,
+                    'quantity': 35,
+                    'repetition': 12
+                    }]
+                },
+                {
+                'type': exercise_type[1].id,
+                'reps':[{
+                    'repetition': 20
+                    }]
+                }
+            ]
+
+        }, format='json')
+    assert response.status_code == status.HTTP_201_CREATED
+
+    comment = 'Kakav fenomenalan trenig. Isplati se raditi po tvom programu.' \
+              'Nadam se da ces me prihvatiti za prijatelja. Pozzz'
+    response = logged_client.post(
+        "/api/post/%s/comment/" % post_id,
+        {
+            'comment': comment
+        }, format='json')
+    post = models.Post.objects.get(id=post_id)
+    assert post.comment_number == 1
+    assert response.status_code == status.HTTP_200_OK
+
+    response = logged_client.get(
+        "/api/post/%s/comment/" % post_id)
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data[0]['comment'] == comment
+
+    response = logged_client.delete(
+        "/api/post/%s/comment/" % post_id)
+    post = models.Post.objects.get(id=post_id)
+    assert post.comment_number == 0
+    assert response.status_code == status.HTTP_200_OK

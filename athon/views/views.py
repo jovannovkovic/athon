@@ -4,6 +4,7 @@ from itertools import izip as zip, count
 from athon import models, serializers, permissions
 from athon.filters import UserFilter
 
+from django.db.models import F
 from django.views.generic.base import TemplateView
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
@@ -356,3 +357,74 @@ class UserPostView(generics.ListAPIView):
     def get_queryset(self):
         user_id = self.kwargs.get('id', None)
         return models.Post.objects.filter(user_id=user_id)
+
+
+class PostLikeView(generics.ListCreateAPIView, generics.DestroyAPIView):
+    model = models.PostLike
+    serializer_class = serializers.PostLikeSerializer
+    permission_classes = (rest_permissions.IsAuthenticated,)
+    paginate_by = 20
+
+    def list(self, request, *args, **kwargs):
+        post_id = self.kwargs.get('id', None)
+        if post_id:
+            queryset = models.Post.objects.get(id=post_id).likes.all()
+            serializer = self.serializer_class(queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        post_id = self.kwargs.get('id', None)
+        if post_id:
+            post = models.Post.objects.get(id=post_id)
+            self.model.objects.create(user=self.request.user, post=post)
+            post.like_number = F('like_number') + 1
+            post.save()
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, *args, **kwargs):
+        post_id = self.kwargs.get('id', None)
+        if post_id:
+            post = models.Post.objects.get(id=post_id)
+            self.model.objects.get(user=self.request.user, post=post).delete()
+            post.like_number = F('like_number') - 1
+            post.save()
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class PostCommentView(generics.ListCreateAPIView, generics.DestroyAPIView):
+    model = models.PostComment
+    serializer_class = serializers.PostCommentSerializer
+    permission_classes = (rest_permissions.IsAuthenticated,)
+    paginate_by = 20
+
+    def list(self, request, *args, **kwargs):
+        post_id = self.kwargs.get('id', None)
+        if post_id:
+            queryset = models.Post.objects.get(id=post_id).comments.all()
+            serializer = self.serializer_class(queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        post_id = self.kwargs.get('id', None)
+        if post_id:
+            comment = self.request.DATA.get('comment')
+            post = models.Post.objects.get(id=post_id)
+            self.model.objects.create(user=self.request.user, post=post, comment=comment)
+            post.comment_number = F('comment_number') + 1
+            post.save()
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, *args, **kwargs):
+        post_id = self.kwargs.get('id', None)
+        if post_id:
+            post = models.Post.objects.get(id=post_id)
+            self.model.objects.get(user=self.request.user, post=post).delete()
+            post.comment_number = F('comment_number') - 1
+            post.save()
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+

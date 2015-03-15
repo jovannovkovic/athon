@@ -288,10 +288,37 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Post
         exclude = ('hidden',)
+        read_only_fields = (
+            "like_number", "comment_number",
+        )
 
     def save_object(self, obj, **kwargs):
         user = self.context.get('user', None)
         if user is not None:
             obj.user = user
         super(PostSerializer, self).save_object(obj, **kwargs)
+
+
+class PostLikeSerializer(serializers.ModelSerializer):
+
+    user = PostUserSerializer()
+
+    class Meta:
+        model = models.PostLike
+        read_only_fields = (
+            "created_at",
+        )
+        exclude = ('post',)
+
+
+class PostCommentSerializer(serializers.ModelSerializer):
+
+    user = PostUserSerializer()
+
+    class Meta:
+        model = models.PostComment
+        read_only_fields = (
+            "created_at",
+        )
+        exclude = ('post',)
 

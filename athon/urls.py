@@ -49,6 +49,8 @@ urlpatterns = patterns('',
     url(r'^api/post/$', views.PostView.as_view()),
     url(r'^api/post/(?P<id>[0-9]+)/$', views.PostDetailView.as_view()),
     url(r'^api/user/(?P<id>[0-9]+)/post/$', views.UserPostView.as_view()),
+    url(r'^api/post/(?P<id>[0-9]+)/like/$', views.PostLikeView.as_view()),
+    url(r'^api/post/(?P<id>[0-9]+)/comment/$', views.PostCommentView.as_view()),
 )
 
 urlpatterns += patterns('',

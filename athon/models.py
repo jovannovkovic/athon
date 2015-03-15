@@ -23,6 +23,7 @@ from enums import Gender, FollowStatus, Unit as EnumUnit
 
 from djorm_pgarray.fields import IntegerArrayField
 from taggit.managers import TaggableManager
+from taggit.models import TaggedItemBase
 
 SHA1_RE = re.compile('^[a-f0-9]{40}$')
 
@@ -208,6 +209,7 @@ class Sport(models.Model):
     def __unicode__(self):
         return "%s" % self.name
 
+
 class AthleteHistory(models.Model):
     """ User sport history and achievements.
 
@@ -238,23 +240,44 @@ class Unit(models.Model):
     def __unicode__(self):
         return "Jedinica %s" % self.name
 
+
+class TaggedMuscleWork(TaggedItemBase):
+    content_object = models.ForeignKey('ExerciseType')
+
+
+class TaggedSynonyms(TaggedItemBase):
+    content_object = models.ForeignKey('ExerciseType')
+
+
 class ExerciseTypeManager(models.Manager):
 
     def get_queryset(self):
         return super(ExerciseTypeManager, self).get_queryset().select_related(
-                'unit')
+                'unit', 'synonyms', 'muscle_work')
+
+
+class ExerciseCategory(models.Model):
+    name = models.CharField(max_length=125, null=True, blank=True)
 
 
 class ExerciseType(models.Model):
     objects = ExerciseTypeManager()
 
     name = models.CharField(max_length=125, null=True, blank=True)
-    synonyms = TaggableManager()
+    synonyms = TaggableManager(through=TaggedSynonyms, blank=True,
+            related_name='exercise_synonyms')
     unit = models.ForeignKey(Unit, null=True, blank=True)
     quantity = models.BooleanField(default=False)
     repetition = models.BooleanField(default=False)
+    body_weight = models.BooleanField(default=False)
+    weighted = models.BooleanField(default=False)
+    exercise_category = models.ForeignKey(ExerciseCategory, null=True, blank=True)
+    muscle_work = TaggableManager(through=TaggedMuscleWork, blank=True,
+            related_name='exercise_muscle')
+
     def __unicode__(self):
         return "Vezba %s" % self.name
+
 
 class ActivityDetails(models.Model):
     rounds = models.CharField(max_length=125, null=True, blank=True)
@@ -287,12 +310,15 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, blank=True)
     hidden = models.BooleanField(default=False)
     activity_details = models.ForeignKey(ActivityDetails, null=True, blank=True, default=None)
+    like_number = models.PositiveIntegerField(default=0)
+    comment_number = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ['-id']
 
     def __unicode__(self):
         return "%s - %s - %s" % (self.user, self.title, self.created_at)
+
 
 class Exercise(models.Model):
     post = models.ForeignKey(Post, null=True, blank=True, related_name='exercises')
@@ -304,6 +330,28 @@ class Repetition(models.Model):
     unit = models.ForeignKey(Unit, null=True, blank=True)
     quantity = models.PositiveSmallIntegerField(default=0, null=True, blank=True)
     repetition = models.PositiveSmallIntegerField(default=0, null=True, blank=True)
+
+
+class PostLike(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    post = models.ForeignKey(Post, related_name='likes')
+    created_at = models.DateTimeField(auto_now_add=True, blank=True)
+
+    class Meta:
+        unique_together = ('user', 'post')
+
+
+class PostComment(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    post = models.ForeignKey(Post, related_name='comments')
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True, blank=True)
+
+
+
+
+
+
 
 
 
