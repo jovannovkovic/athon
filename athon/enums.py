@@ -36,3 +36,17 @@ class Unit(enum.Enum):
     METRIC: _('Metric'),
     US: _('US')
     }
+
+
+class ChallengeResponse(enum.Enum):
+    """ Enumeration for follow status (follow, following). """
+
+    ACEPTED = 1
+    REJECTED = 2
+    PENDING = 3
+
+    labels = {
+    ACEPTED: _('Acepted'),
+    REJECTED: _('Rejected'),
+    PENDING: _('Pending')
+    }

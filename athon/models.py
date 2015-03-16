@@ -19,7 +19,8 @@ from django.utils.http import int_to_base36
 from django.utils.translation import gettext_lazy as _
 
 from uuid_upload_path.storage import upload_to
-from enums import Gender, FollowStatus, Unit as EnumUnit
+from enums import Gender, FollowStatus, Unit as EnumUnit,\
+        ChallengeResponse as ChallengeResponseEnum
 
 from djorm_pgarray.fields import IntegerArrayField
 from taggit.managers import TaggableManager
@@ -286,6 +287,27 @@ class ActivityDetails(models.Model):
     for_time = models.CharField(max_length=125, null=True, blank=True)
     pace = models.CharField(max_length=125, null=True, blank=True)
     amrap = IntegerArrayField()
+
+
+class ChallengeType(models.Model):
+    name = models.CharField(max_length=125, null=True, blank=True,
+                verbose_name='Npr. DO, ili SPORT')
+
+
+class Challenge(models.Model):
+    post = models.ForeignKey('Post', related_name='challenge')
+    deadline = models.DateTimeField()
+    description = models.TextField()
+    subscribers = models.ManyToManyField(settings.AUTH_USER_MODEL)
+    type = models.ForeignKey(ChallengeType, null=True, blank=True)
+
+
+class ChallengeResponse(models.Model):
+    challenge = models.ForeignKey(Challenge, related_name='responses')
+    response = enum.EnumField(ChallengeResponseEnum)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    date_responded = models.DateTimeField(blank=True, null=True)
+    result = models.FloatField(default=0)
 
 
 class PostManager(models.Manager):
