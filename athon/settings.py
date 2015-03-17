@@ -42,7 +42,7 @@ ALLOWED_HOSTS = ['*']
 
 IS_PRODUCTION_ENV = os.getenv('env_athon') == 'production'
 if IS_PRODUCTION_ENV:
-    DEBUG = False
+    # DEBUG = False
     TEMPLATE_DEBUG = False
 
 
