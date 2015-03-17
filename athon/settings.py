@@ -72,10 +72,10 @@ INSTALLED_APPS = (
 
 MIDDLEWARE_CLASSES = (
     'corsheaders.middleware.CorsMiddleware',
-    'corsheaders.middleware.CorsPostCsrfMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'corsheaders.middleware.CorsPostCsrfMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -107,10 +107,15 @@ DATABASES['default']['ENGINE'] = 'django_postgrespool'
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
+# CORS_ORIGIN_ALLOW_ALL = DEBUG
+
 CORS_ORIGIN_WHITELIST = (
-    'herokuapp.com',
+    'athons.herokuapp.com',
     'athon.divshot.io',
+    'localhost:8000',
+    '127.0.0.1:8000',
 )
+# CORS_ALLOW_CREDENTIALS = True
 CORS_URL_REGEX = r'^/api/.*$'
 CORS_REPLACE_HTTPS_REFERER = True
 
