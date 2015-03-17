@@ -71,11 +71,11 @@ INSTALLED_APPS = (
 )
 
 MIDDLEWARE_CLASSES = (
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsPostCsrfMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'corsheaders.middleware.CorsPostCsrfMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -122,26 +122,31 @@ DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 MEDIA_ROOT = os.path.join(BASE_DIR, DEFAULT_MEDIA_PATH)
 MEDIA_URL = '/%s/' % DEFAULT_MEDIA_PATH
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_FOLDER = "static"
 # STATIC_ROOT = os.path.join(BASE_DIR, STATIC_FOLDER)
 STATIC_ROOT = 'staticfiles'
 STATIC_URL = '/%s/' % STATIC_FOLDER
 
-# DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 if IS_PRODUCTION_ENV:
-    DEFAULT_FILE_STORAGE = 's3_folder_storage.s3.DefaultStorage'
-    STATICFILES_STORAGE = 's3_folder_storage.s3.StaticStorage'
-    STATIC_S3_PATH = "static"
     AWS_ACCESS_KEY_ID = os.environ.get("ATHON_AWS_ACCESS_KEY_ID")
     AWS_SECRET_ACCESS_KEY = os.environ.get("ATHON_AWS_SECRET_ACCESS_KEY")
     AWS_STORAGE_BUCKET_NAME = os.environ.get(
             "ATHON_AWS_STORAGE_BUCKET_NAME")
+    DEFAULT_FILE_STORAGE = 's3_folder_storage.s3.DefaultStorage'
+    # STATICFILES_STORAGE = 's3_folder_storage.s3.StaticStorage'
+    # STATIC_S3_PATH = "static"
+
     AWS_S3_DOMAIN = '//s3.amazonaws.com/%s/media/'
     MEDIA_URL = '//s3.amazonaws.com/%s/media/' % AWS_STORAGE_BUCKET_NAME
     MEDIA_ROOT = '/%s/' % DEFAULT_MEDIA_PATH
     MEDIA_URL = 'http://%s/%s/' % (AWS_S3_DOMAIN, DEFAULT_MEDIA_PATH)
     DEFAULT_S3_PATH = MEDIA_ROOT
 
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+)
 
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
