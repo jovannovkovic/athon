@@ -70,10 +70,14 @@ class AuthenticateView(APIView):
     def post(self, request):
         username = data(request, 'username')
         password = data(request, 'password')
+        print username
+        print password
         user = authenticate(username=username, password=password)
+        print user
         if user is not None:
             profile = user.profile
             if profile.is_active:
+                print 'profile active'
                 login(request, user)
                 return Response(UserSerializer(user).data)
             else:
@@ -81,8 +85,10 @@ class AuthenticateView(APIView):
                     print "b"*20
                     login(request, user)
                     return Response(UserSerializer(user).data)
+                print 'a'*20
                 return Response(status=status.HTTP_401_UNAUTHORIZED)
         else:
+            print 'ne postoji'
             return Response(status=status.HTTP_404_NOT_FOUND)
 
     def is_allowed_to_login(self, user):
