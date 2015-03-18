@@ -107,14 +107,14 @@ DATABASES['default']['ENGINE'] = 'django_postgrespool'
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# CORS_ORIGIN_ALLOW_ALL = DEBUG
+CORS_ORIGIN_ALLOW_ALL = True
 
-CORS_ORIGIN_WHITELIST = (
-    'athons.herokuapp.com',
-    'athon.divshot.io',
-    'localhost:8000',
-    '127.0.0.1:8000',
-)
+# CORS_ORIGIN_WHITELIST = (
+#     'athons.herokuapp.com',
+#     'athon.divshot.io',
+#     'localhost:8000',
+#     '127.0.0.1:8000',
+# )
 # CORS_ALLOW_CREDENTIALS = True
 CORS_URL_REGEX = r'^/api/.*$'
 CORS_REPLACE_HTTPS_REFERER = True
