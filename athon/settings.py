@@ -42,7 +42,7 @@ ALLOWED_HOSTS = ['*']
 
 IS_PRODUCTION_ENV = os.getenv('env_athon') == 'production'
 if IS_PRODUCTION_ENV:
-    # DEBUG = False
+    DEBUG = False
     TEMPLATE_DEBUG = False
 
 
@@ -107,7 +107,6 @@ DATABASES['default']['ENGINE'] = 'django_postgrespool'
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_WHITELIST = (
     'herokuapp.com',
@@ -115,8 +114,7 @@ CORS_ORIGIN_WHITELIST = (
     'localhost:8000',
     '127.0.0.1:8000',
 )
-# CORS_ALLOW_CREDENTIALS = True
-# CORS_URL_REGEX = r'^/api/.*$'
+CORS_URL_REGEX = r'^/api/.*$'
 CORS_REPLACE_HTTPS_REFERER = True
 CORS_ALLOW_HEADERS = (
     'x-requested-with',
