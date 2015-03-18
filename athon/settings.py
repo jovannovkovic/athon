@@ -75,7 +75,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'corsheaders.middleware.CorsPostCsrfMiddleware',
+    # 'corsheaders.middleware.CorsPostCsrfMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -108,7 +108,7 @@ DATABASES['default']['ENGINE'] = 'django_postgrespool'
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 CORS_ORIGIN_ALLOW_ALL = True
-
+CORS_ALLOW_CREDENTIALS = True
 # CORS_ORIGIN_WHITELIST = (
 #     'athons.herokuapp.com',
 #     'athon.divshot.io',
@@ -116,8 +116,8 @@ CORS_ORIGIN_ALLOW_ALL = True
 #     '127.0.0.1:8000',
 # )
 # CORS_ALLOW_CREDENTIALS = True
-CORS_URL_REGEX = r'^/api/.*$'
-CORS_REPLACE_HTTPS_REFERER = True
+# CORS_URL_REGEX = r'^/api/.*$'
+# CORS_REPLACE_HTTPS_REFERER = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
