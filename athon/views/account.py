@@ -18,7 +18,7 @@ from athon.serializers import UserSerializer, ResetPasswordKeySerializer,\
         ResetPasswordSerializer
 
 
-REGISTRATION_ALLOWED_FOR = 10
+REGISTRATION_ALLOWED_FOR = 100000
 
 
 # helper for extracting data from REST DATA object
